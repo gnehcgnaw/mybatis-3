@@ -209,10 +209,21 @@ public class XNode {
     }
   }
 
+  /**
+   * 通过属性名称，获取字符串属性值
+   * @param name
+   * @return
+   */
   public String getStringAttribute(String name) {
     return getStringAttribute(name, null);
   }
 
+  /**
+   * 通过属性名称，获取属性值
+   * @param name
+   * @param def
+   * @return
+   */
   public String getStringAttribute(String name, String def) {
     String value = attributes.getProperty(name);
     if (value == null) {
@@ -301,6 +312,10 @@ public class XNode {
     return children;
   }
 
+  /**
+   * 返回子标签中的属性和属性值
+   * @return
+   */
   public Properties getChildrenAsProperties() {
     Properties properties = new Properties();
     for (XNode child : getChildren()) {

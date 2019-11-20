@@ -21,6 +21,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
+ * 类型处理器
+ * 说白了typeHandlers就是用来完成javaType和jdbcType之间的转换
  * @author Clinton Begin
  */
 public interface TypeHandler<T> {

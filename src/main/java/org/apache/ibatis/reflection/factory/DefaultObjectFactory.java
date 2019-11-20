@@ -34,6 +34,9 @@ import org.apache.ibatis.reflection.ReflectionException;
 import org.apache.ibatis.reflection.Reflector;
 
 /**
+ * 默认对象工厂
+ *    默认的对象工厂需要做的仅仅是实例化目标类，要么通过默认构造方法，要么在参数映射存在的时候通过参数够着方法来实例化，它不做其他任何的处理。
+ *    如果我们想要在创建实例化一个目标的手做点啥其他的动作，可以继承这个类，即DefaultObjectFactory,覆盖父类方法，并在mybatis-config.xml中配置这个对象工厂类。
  * @author Clinton Begin
  */
 public class DefaultObjectFactory implements ObjectFactory, Serializable {

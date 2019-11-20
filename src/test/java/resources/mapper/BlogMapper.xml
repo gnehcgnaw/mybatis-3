@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="red.reksai.mybatissample.mapper.BlogMapper">
+  <select id="selectBlog" resultType="map">
+    select * from blog where blog_id = #{id}
+  </select>
+
+
+  <resultMap id="BaseResultMap" type="red.reksai.mybatissample.entity.Blog">
+    <id column="blog_id" jdbcType="INTEGER" property="blogId" />
+    <result column="blog_title" jdbcType="VARCHAR" property="blogTitle" />
+    <result column="blog_content" jdbcType="VARCHAR" property="blogContext" />
+    <!-- 不使用ExampleTypeHandler-->
+    <result column="create_time" jdbcType="VARCHAR" property="createTime" />
+    <!-- 使用ExampleTypeHandler-->
+    <result column="modify_time" typeHandler="red.reksai.mybatissample.typehandler.ExampleTypeHandler" property="modifyTime" />
+  </resultMap>
+
+  <insert id="insertBlog">
+        insert into blog (blog_title, blog_context,
+        create_time, modify_time)
+        values (#{blog.blogTitle,jdbcType=VARCHAR},
+            #{blog.blogContext,jdbcType=VARCHAR},
+         #{blog.createTime,jdbcType=VARCHAR}, #{blog.modifyTime,typeHandler=red.reksai.mybatissample.typehandler.ExampleTypeHandler})
+  </insert>
+</mapper>

@@ -3,7 +3,7 @@ package red.reksai.mybatissample;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
-import red.reksai.mybatissample.mapper.UserMapper;
+import red.reksai.mybatissample.mapper.BlogMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,9 +17,8 @@ public class MyBatisSimpleDemo {
     String resource = "resources/mybatis-config.xml" ;
     InputStream inputStream = Resources.getResourceAsStream(resource);
     SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
-    UserMapper userMapper = sqlSessionFactory.openSession().getMapper(UserMapper.class);
-    System.out.println(userMapper.selectUser(1));
-
+    BlogMapper blogMapper = sqlSessionFactory.openSession().getMapper(BlogMapper.class);
+    System.out.println(blogMapper.selectBlog(1));
 
   }
 }

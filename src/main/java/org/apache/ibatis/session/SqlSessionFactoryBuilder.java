@@ -72,8 +72,20 @@ public class SqlSessionFactoryBuilder {
     return build(inputStream, null, properties);
   }
 
+  /**
+   * 通过构件返回一个SqlSessionFactory
+   * @param inputStream 文件流
+   * @param environment
+   * @param properties
+   * @return
+   */
   public SqlSessionFactory build(InputStream inputStream, String environment, Properties properties) {
     try {
+      /**
+       *  1. 将传入的配置构建成一个XMLConfigBuilder(xml配置生成器)；
+       *  2. 然后通过这个构建器去解析配置；
+       *  3. 最后返回的配置Configuration去构建一个SqlSessionFactory并返回。
+       */
       XMLConfigBuilder parser = new XMLConfigBuilder(inputStream, environment, properties);
       return build(parser.parse());
     } catch (Exception e) {

@@ -47,11 +47,12 @@ import org.apache.ibatis.transaction.TransactionFactory;
 import org.apache.ibatis.type.JdbcType;
 
 /**
+ * 是对mybatis的配置文件进行解析的类。
  * @author Clinton Begin
  * @author Kazuki Shimizu
  */
 public class XMLConfigBuilder extends BaseBuilder {
-
+  //是否被解析过
   private boolean parsed;
   private final XPathParser parser;
   private String environment;
@@ -90,24 +91,52 @@ public class XMLConfigBuilder extends BaseBuilder {
     this.parser = parser;
   }
 
+  /**
+   * 解析配置：
+   *    这里其实有一个细节，就是{@link #parsed} 字段，这是一个boolbean类型的，也就是默认值是false，
+   *    根据以下代码，发现只有当parsed = false才回去解析配置，为true的时候不会去解析，直接抛出异常，
+   *    这么做的原因是：因为在解析mybatis中配置文件的时候是一件很消耗性能的事情，所以只解析一次。
+   * @return configuration配置 （e.g. <configuration> ....<configuration/>）
+   */
   public Configuration parse() {
     if (parsed) {
       throw new BuilderException("Each XMLConfigBuilder can only be used once.");
     }
     parsed = true;
+    //使用Java xpath进行解析的
     parseConfiguration(parser.evalNode("/configuration"));
     return configuration;
   }
 
+  /**
+   * 解析Configuration标签中的配置
+   * @param root
+   */
   private void parseConfiguration(XNode root) {
     try {
       //issue #117 read properties first
+      /**
+       * 外部化配置处理：
+       *    1.外部化配置覆盖内部配置属性值；
+       *    2.为XPathParser填充值；
+       *    3.为configuration填充值。
+       */
       propertiesElement(root.evalNode("properties"));
+      //这是 MyBatis 中极为重要的调整设置，它们会改变 MyBatis 的运行时行为，但是我们在编程的时候，很少去触及这一部分。
       Properties settings = settingsAsProperties(root.evalNode("settings"));
       loadCustomVfs(settings);
       loadCustomLogImpl(settings);
+      /**
+       *  类型别名是为 Java 类型设置一个短的名字。 它只和 XML 配置有关，存在的意义仅在于用来减少类完全限定名的冗余；
+       *  别名是不区分大小写的，不管你传入的值是大写还是小写，最终都被转化为了小写。
+       */
       typeAliasesElement(root.evalNode("typeAliases"));
+      /**
+       * 通过 MyBatis 提供的强大机制，使用插件是非常简单的，只需实现 Interceptor 接口，并指定想要拦截的方法签名即可。
+       * //todo 后续写插件验证
+       */
       pluginElement(root.evalNode("plugins"));
+
       objectFactoryElement(root.evalNode("objectFactory"));
       objectWrapperFactoryElement(root.evalNode("objectWrapperFactory"));
       reflectorFactoryElement(root.evalNode("reflectorFactory"));
@@ -156,9 +185,18 @@ public class XMLConfigBuilder extends BaseBuilder {
     configuration.setLogImpl(logImpl);
   }
 
+  /**
+   * 处理别名参数
+   * @param parent
+   */
   private void typeAliasesElement(XNode parent) {
     if (parent != null) {
       for (XNode child : parent.getChildren()) {
+        /**
+         * 指定报名，MyBatis 会在包名下面搜索需要的 Java Bean
+         * 每一个在包 domain.blog 中的 Java Bean，在没有注解的情况下，会使用 Bean 的首字母小写的非限定类名来作为它的别名。
+         * 比如 domain.blog.Author 的别名为 author；若有注解，则别名为其注解值 。
+         */
         if ("package".equals(child.getName())) {
           String typeAliasPackage = child.getStringAttribute("name");
           configuration.getTypeAliasRegistry().registerAliases(typeAliasPackage);
@@ -218,14 +256,26 @@ public class XMLConfigBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   * 处理属性参数
+   *    只有存在属性标签的时候才回去解析处理。
+   * @param context  e.g. <properties resource="resources/config.properties">
+   *                         <property name="username" value="xxx"/>
+   *                         <property name="password" value="xxx"/>
+   *                      </properties>
+   * @throws Exception
+   */
   private void propertiesElement(XNode context) throws Exception {
     if (context != null) {
+      // username = xxx 和password = xxx 两个
       Properties defaults = context.getChildrenAsProperties();
       String resource = context.getStringAttribute("resource");
       String url = context.getStringAttribute("url");
+      //properties元素不能同时指定URL和基于资源的属性文件引用。请指定其中一个。
       if (resource != null && url != null) {
         throw new BuilderException("The properties element cannot specify both a URL and a resource based property file reference.  Please specify one or the other.");
       }
+      //这个其实就是使用外部化配置覆盖内部值
       if (resource != null) {
         defaults.putAll(Resources.getResourceAsProperties(resource));
       } else if (url != null) {

@@ -30,6 +30,16 @@ public interface ObjectFactory {
    * @param properties configuration properties
    */
   default void setProperties(Properties properties) {
+    /**
+     *   空操纵：说白了，如果要继承ObjectFactory，不仅要定义Properties 属性，还有再提供一个getProperties()的方法
+     *   e.g. {@link red.reksai.mybatissample.objectfactory.ExampleObjectFactory}（我自定义的测试用例）
+     *   {@link org.apache.ibatis.submitted.global_variables_defaults.SupportClasses.CustomObjectFactory}(官方测试用例)
+     *   同时在mybatis-config.xml添加如下配置：
+     *   <objectFactory type="org.mybatis.example.ExampleObjectFactory">
+     *       <property name="someProperty" value="100"/>
+     *   </objectFactory>
+     *   这样可以拿到property的值。
+     */
     // NOP
   }
 

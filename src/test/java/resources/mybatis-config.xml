@@ -3,18 +3,52 @@
   PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-config.dtd">
 <configuration>
+  <!--1. 外部化配置，
+    a. config.properties中的属性值可以覆盖此标签中的属性的值，当然了，如果外部化没有配置，那么会只用这里配置的属性的值;
+    b. resource 和 url是平级属性， 但是只能有一个不然会报错：The properties element cannot specify both a URL and a resource based property file reference.  Please specify one or the other.
+  -->
+  <properties resource="resources/config.properties" >
+    <property name="username" value="xxx"/>
+    <property name="password" value="xxx"/>
+  </properties>
+  <!--2. settings 这是 MyBatis 中极为重要的调整设置，它们会改变 MyBatis 的运行时行为。 //todo -->
+
+  <!--3. typeAliases 设置类型别名：
+    a. 类型别名是为 Java 类型设置一个短的名字。 它只和 XML 配置有关，存在的意义仅在于用来减少类完全限定名的冗余，
+    b. mybatis 默认为我们设置了基本类型，在我们编程的时候，也可以将类似于red.reksai.UserDao   aliases == userDao 。 //todo
+  -->
+
+  <!--4. typeHandlers -->
+  <typeHandlers>
+    <typeHandler handler="red.reksai.mybatissample.typehandler.ExampleTypeHandler" javaType="java.util.Date" jdbcType="VARCHAR"></typeHandler>
+  </typeHandlers>
+  <!--5. objectFactory -->
+  <objectFactory type="red.reksai.mybatissample.objectfactory.ExampleObjectFactory">
+    <!--这个值虽然，设置了，但是没有什么卵用，通过ObjectFactory的方法不能取出这个值-->
+    <property name="someProperty" value="100"/>
+  </objectFactory>
+
+  <!--6. plugins   //todo 后续验证-->
+
+  <!--7. environments 环境配置-->
   <environments default="development">
     <environment id="development">
+      <!-- 7.1. transactionManager 事务管理器-->
       <transactionManager type="JDBC"/>
+      <!-- 7.2. dataSource 数据源-->
       <dataSource type="POOLED">
-        <property name="driver" value="com.mysql.cj.jdbc.Driver"/>
-        <property name="url" value="jdbc:mysql://localhost:3306/exam?characterEncoding=utf8"/>
-        <property name="username" value="root"/>
-        <property name="password" value="1qaz2wsx!@#"/>
+        <property name="driver" value="${driver}"/>
+        <property name="url" value="${url}"/>
+        <property name="username" value="${username}"/>
+        <property name="password" value="${password}"/>
       </dataSource>
     </environment>
   </environments>
+  <!--8. databaseIdProvider 数据库厂商标识 //todo-->
+
+  <!--9. mappers 映射器-->
   <mappers>
-    <mapper resource="resources/mapper/UserMapper.xml"/>
+    <mapper resource="resources/mapper/BlogMapper.xml"/>
   </mappers>
+
 </configuration>

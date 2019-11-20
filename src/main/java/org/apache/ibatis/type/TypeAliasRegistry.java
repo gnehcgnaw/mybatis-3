@@ -33,10 +33,13 @@ import org.apache.ibatis.io.ResolverUtil;
 import org.apache.ibatis.io.Resources;
 
 /**
+ * 类型别名注册
+ *    本身为我们注册了一些为常见的 Java 类型内建的相应的类型别名。
+ *    它们都是不区分大小写的，注意对基本类型名称重复采取的特殊命名风格。
  * @author Clinton Begin
  */
 public class TypeAliasRegistry {
-
+  //所有的类型别名都放在这个map中
   private final Map<String, Class<?>> typeAliases = new HashMap<>();
 
   public TypeAliasRegistry() {
@@ -147,11 +150,17 @@ public class TypeAliasRegistry {
     registerAlias(alias, type);
   }
 
+  /**
+   * 注册类型别名
+   * @param alias 被注册类的别名
+   * @param value  被注册的类
+   */
   public void registerAlias(String alias, Class<?> value) {
     if (alias == null) {
       throw new TypeException("The parameter alias cannot be null");
     }
     // issue #748
+    //所有的类型最终都被转换为了小写，所以之前不管你是大写还是小写，最后都不转化了，不要因为大小写是不一样的。
     String key = alias.toLowerCase(Locale.ENGLISH);
     if (typeAliases.containsKey(key) && typeAliases.get(key) != null && !typeAliases.get(key).equals(value)) {
       throw new TypeException("The alias '" + alias + "' is already mapped to the value '" + typeAliases.get(key).getName() + "'.");
