@@ -20,7 +20,7 @@ public class JDBCDemo {
     Connection connection = null;
     ResultSet resultSet = null;
     try {
-      connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/exam?serverTimezone=Asia/Shanghai&characterEncoding=utf8" ,"root","1qaz2wsx!@#");
+      connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/exam?characterEncoding=utf8" ,"root","1qaz2wsx!@#");
       PreparedStatement preparedStatement = connection.prepareStatement("select * from t_user");
       resultSet = preparedStatement.executeQuery();
       while (resultSet.next()){
@@ -29,15 +29,19 @@ public class JDBCDemo {
     } catch (SQLException e) {
       e.printStackTrace();
     }finally {
-      try {
-        resultSet.close();
-      } catch (SQLException e) {
-        e.printStackTrace();
+      if (resultSet!=null){
+        try {
+          resultSet.close();
+        } catch (SQLException e) {
+          e.printStackTrace();
+        }
       }
-      try {
-        connection.close();
-      } catch (SQLException e) {
-        e.printStackTrace();
+      if (connection!=null){
+        try {
+          connection.close();
+        } catch (SQLException e) {
+          e.printStackTrace();
+        }
       }
     }
   }
