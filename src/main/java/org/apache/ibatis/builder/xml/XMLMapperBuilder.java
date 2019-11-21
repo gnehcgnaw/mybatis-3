@@ -93,6 +93,7 @@ public class XMLMapperBuilder extends BaseBuilder {
     if (!configuration.isResourceLoaded(resource)) {
       configurationElement(parser.evalNode("/mapper"));
       configuration.addLoadedResource(resource);
+      //为mapper绑定命名空间
       bindMapperForNamespace();
     }
 

@@ -87,9 +87,23 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
     return configuration;
   }
 
+  /**
+   *
+   * @param execType  执行器类型，有三种类型，默认是simple（sqlSession内部维护了一个Executor,我们实际上进行的增删改查都是通过这个执行器的。）
+   * @param level 事务隔离级别
+   * @param autoCommit  是否自动提交事务 ，默认为false
+   * @return  DefaultSqlSession
+   */
   private SqlSession openSessionFromDataSource(ExecutorType execType, TransactionIsolationLevel level, boolean autoCommit) {
     Transaction tx = null;
     try {
+      /**
+       * 获取environment的目的是：
+       *    为了获取<Environment></Environment>中的事务管理器
+       *        例如：（<transactionManager type="JDBC"/>），得到的transactionFactory就是JdbcTransactionFactory
+       *    然后根据获取的事务工厂创建一个Transaction对象；
+       *    如果我们没有配置事务级别，那就没有事务级别，最后根据走的数据库的事务级别来确定。
+       */
       final Environment environment = configuration.getEnvironment();
       final TransactionFactory transactionFactory = getTransactionFactoryFromEnvironment(environment);
       tx = transactionFactory.newTransaction(environment.getDataSource(), level, autoCommit);

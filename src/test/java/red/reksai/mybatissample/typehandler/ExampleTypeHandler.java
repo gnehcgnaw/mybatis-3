@@ -1,9 +1,7 @@
 package red.reksai.mybatissample.typehandler;
 
 import org.apache.ibatis.io.Resources;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+import org.apache.ibatis.session.*;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;
@@ -12,6 +10,7 @@ import red.reksai.mybatissample.entity.Blog;
 import red.reksai.mybatissample.mapper.BlogMapper;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -65,21 +64,29 @@ public class ExampleTypeHandler extends BaseTypeHandler {
 class Main{
   public static void main(String[] args) throws IOException {
     String resources = "resources/mybatis-config.xml";
+    /**
+     *  这里得到的sqlSessionFactory的实现是DefaultSqlSessionFactory
+     *  参看：{@link SqlSessionFactoryBuilder#build(Configuration)}}
+     */
     SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(Resources.getResourceAsStream(resources));
+    /**
+     *  这里得到的sqlSession的实现是DefaultSqlSession，并且当前的事务默认是不会自动提交的，所以通过此sqlSession进行的操作要想成功，最后都要使用{@link SqlSession#commit()}
+     *  参看：{@link org.apache.ibatis.session.defaults.DefaultSqlSessionFactory#openSessionFromDataSource(ExecutorType, TransactionIsolationLevel, boolean)}
+     */
     SqlSession sqlSession = sqlSessionFactory.openSession();
     TypeHandlerRegistry typeHandlerRegistry = sqlSession.getConfiguration().getTypeHandlerRegistry();
     Collection<TypeHandler<?>> typeHandlers = typeHandlerRegistry.getTypeHandlers();
     for (TypeHandler typeHandler : typeHandlers){
       System.out.println(typeHandler.getClass().getName());
     }
-    BlogMapper blogMapper = sqlSessionFactory.openSession().getMapper(BlogMapper.class);
+    BlogMapper blogMapper = sqlSession.getMapper(BlogMapper.class);
     Blog blog = new Blog();
     blog.setBlogTitle("mybatis_learning");
     blog.setBlogContext("typeHandler learning");
     blog.setCreateTime(new Date());
     blog.setModifyTime(new Date());
-    //数据没有添加到数据库，//todo 问题需要解决
     int insertCount = blogMapper.insertBlog(blog);
+    sqlSession.commit();
     System.out.println("添加条数为："+insertCount);
   }
 }

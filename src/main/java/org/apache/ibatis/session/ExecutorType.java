@@ -16,6 +16,8 @@
 package org.apache.ibatis.session;
 
 /**
+ * 执行器类型
+ * //todo ExecutorType中有三种类型，这三种不同的执行器类型有什么区别？
  * @author Clinton Begin
  */
 public enum ExecutorType {

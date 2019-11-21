@@ -16,6 +16,8 @@
 package org.apache.ibatis.executor;
 
 /**
+ * 这个类的名字完美的表明了自己的职责：
+ *    记录本次执行过程中相关上下文信息，待发生error时候其他组件可以从本来的实例中获取相关的上下文信息，这对于排错有非常有帮助。
  * @author Clinton Begin
  */
 public class ErrorContext {

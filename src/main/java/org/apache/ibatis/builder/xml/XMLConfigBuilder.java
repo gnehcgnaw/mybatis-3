@@ -138,13 +138,22 @@ public class XMLConfigBuilder extends BaseBuilder {
       pluginElement(root.evalNode("plugins"));
 
       objectFactoryElement(root.evalNode("objectFactory"));
+      //todo 验证objectWrapperFactory是什么？
       objectWrapperFactoryElement(root.evalNode("objectWrapperFactory"));
+      // todo 验证refectorFactory是什么？
       reflectorFactoryElement(root.evalNode("reflectorFactory"));
       settingsElement(settings);
       // read it after objectFactory and objectWrapperFactory issue #631
+      //添加环境
       environmentsElement(root.evalNode("environments"));
+      //添加数据库厂商标识
       databaseIdProviderElement(root.evalNode("databaseIdProvider"));
+      /**
+       *  添加类型转换器 e.g. {@link red.reksai.mybatissample.typehandler.ExampleTypeHandler}
+       *  // todo 但是不知道为什么写的sql调用方法不能执行，后续去解决
+       */
       typeHandlerElement(root.evalNode("typeHandlers"));
+      //添加mappers
       mapperElement(root.evalNode("mappers"));
     } catch (Exception e) {
       throw new BuilderException("Error parsing SQL Mapper Configuration. Cause: " + e, e);
@@ -418,6 +427,7 @@ public class XMLConfigBuilder extends BaseBuilder {
           String url = child.getStringAttribute("url");
           String mapperClass = child.getStringAttribute("class");
           if (resource != null && url == null && mapperClass == null) {
+            //todo ErrorContext后续研究
             ErrorContext.instance().resource(resource);
             InputStream inputStream = Resources.getResourceAsStream(resource);
             XMLMapperBuilder mapperParser = new XMLMapperBuilder(inputStream, configuration, resource, configuration.getSqlFragments());

@@ -91,6 +91,7 @@ public class SqlSessionFactoryBuilder {
     } catch (Exception e) {
       throw ExceptionFactory.wrapException("Error building SqlSession.", e);
     } finally {
+      //使用完之后要reset掉
       ErrorContext.instance().reset();
       try {
         inputStream.close();
