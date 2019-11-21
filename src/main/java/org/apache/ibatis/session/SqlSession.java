@@ -194,6 +194,7 @@ public interface SqlSession extends Closeable {
   int update(String statement);
 
   /**
+   * 执行更新语句。将返回受影响的行数
    * Execute an update statement. The number of rows affected will be returned.
    * @param statement Unique identifier matching the statement to execute.
    * @param parameter A parameter object to pass to the statement.

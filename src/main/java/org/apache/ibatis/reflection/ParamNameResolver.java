@@ -28,11 +28,18 @@ import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 
+/**
+ * 参数名称解析器
+ */
 public class ParamNameResolver {
 
+  /**
+   *   通用前缀，假如没有定义参数名称，最后在同一个方法的参数列表就是param1 、param2 一次类推。
+   */
   public static final String GENERIC_NAME_PREFIX = "param";
 
   /**
+   * 参数的名称是有顺序的
    * <p>
    * The key is the index and the value is the name of the parameter.<br />
    * The name is obtained from {@link Param} if specified. When {@link Param} is not specified,
@@ -47,6 +54,9 @@ public class ParamNameResolver {
    */
   private final SortedMap<Integer, String> names;
 
+  /**
+   *   参数是否被注解注释
+   */
   private boolean hasParamAnnotation;
 
   public ParamNameResolver(Configuration config, Method method) {
@@ -111,9 +121,18 @@ public class ParamNameResolver {
     final int paramCount = names.size();
     if (args == null || paramCount == 0) {
       return null;
-    } else if (!hasParamAnnotation && paramCount == 1) {
+    }
+    // 没有加注解，并且只有一个参数的时候就返回第一个就就行，这样是为了节省性能
+    else if (!hasParamAnnotation && paramCount == 1) {
       return args[names.firstKey()];
-    } else {
+    }
+    /**
+     * 假如加了注解，返回的参数形式就有两套：
+     *  e.g.
+     *    @Param 这是一套
+     *    param1, param2, ...这是另一套
+     */
+    else {
       final Map<String, Object> param = new ParamMap<>();
       int i = 0;
       for (Map.Entry<Integer, String> entry : names.entrySet()) {

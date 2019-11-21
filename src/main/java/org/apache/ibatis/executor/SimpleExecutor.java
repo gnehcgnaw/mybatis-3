@@ -45,8 +45,13 @@ public class SimpleExecutor extends BaseExecutor {
     Statement stmt = null;
     try {
       Configuration configuration = ms.getConfiguration();
+      /**
+       *  创建一个语句处理器，类型是RoutingStatementHandler ，如果mapper中没有使用{@link org.apache.ibatis.mapping.StatementType}去指定类型，默认是PreparedStatementHandler
+       */
       StatementHandler handler = configuration.newStatementHandler(this, ms, parameter, RowBounds.DEFAULT, null, null);
+      //准备声明
       stmt = prepareStatement(handler, ms.getStatementLog());
+      //执行更新操作
       return handler.update(stmt);
     } finally {
       closeStatement(stmt);
@@ -81,9 +86,20 @@ public class SimpleExecutor extends BaseExecutor {
     return Collections.emptyList();
   }
 
+  /**
+   *
+   * @param handler {@link org.apache.ibatis.executor.statement.RoutingStatementHandler}
+   * @param statementLog
+   * @return
+   * @throws SQLException
+   */
   private Statement prepareStatement(StatementHandler handler, Log statementLog) throws SQLException {
     Statement stmt;
+    //获取连接
     Connection connection = getConnection(statementLog);
+    /**
+     * {@link org.apache.ibatis.executor.statement.RoutingStatementHandler#prepare(Connection, Integer)}
+     */
     stmt = handler.prepare(connection, transaction.getTimeout());
     handler.parameterize(stmt);
     return stmt;

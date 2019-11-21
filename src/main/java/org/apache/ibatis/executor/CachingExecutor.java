@@ -28,16 +28,23 @@ import org.apache.ibatis.mapping.ParameterMapping;
 import org.apache.ibatis.mapping.ParameterMode;
 import org.apache.ibatis.mapping.StatementType;
 import org.apache.ibatis.reflection.MetaObject;
+import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.transaction.Transaction;
 
 /**
+ * 缓存执行器
  * @author Clinton Begin
  * @author Eduardo Macarron
  */
 public class CachingExecutor implements Executor {
-
+  /**
+   * 这里的Executor是谁呢？？
+   * 参看{@link org.apache.ibatis.session.Configuration#newExecutor(Transaction, ExecutorType)},其中有一段调用{@link CachingExecutor#CachingExecutor(Executor)}的代码。
+   * 调用构造赋值的执行器就是，后续调用类的执行器，e.g. {@link #update(MappedStatement, Object)}中的 return delegate.update(ms, parameterObject); 的delegate 。
+   * 默认是{@link SimpleExecutor}
+   */
   private final Executor delegate;
   private final TransactionalCacheManager tcm = new TransactionalCacheManager();
 
@@ -73,6 +80,10 @@ public class CachingExecutor implements Executor {
   @Override
   public int update(MappedStatement ms, Object parameterObject) throws SQLException {
     flushCacheIfRequired(ms);
+    /**
+     * 默认{@link #delegate}是{@link SimpleExecutor} ,虽然simpleExecutor中没有update方法，但是它继承了BaseExecutor。
+     * {@link BaseExecutor#update(MappedStatement, Object)}
+     */
     return delegate.update(ms, parameterObject);
   }
 
@@ -161,6 +172,10 @@ public class CachingExecutor implements Executor {
     delegate.clearLocalCache();
   }
 
+  /**
+   * 检查是否有必要刷新缓存，然后根据情况做是否刷新的操作
+   * @param ms
+   */
   private void flushCacheIfRequired(MappedStatement ms) {
     Cache cache = ms.getCache();
     if (cache != null && ms.isFlushCacheRequired()) {

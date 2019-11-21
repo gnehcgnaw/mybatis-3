@@ -45,7 +45,7 @@ import org.apache.ibatis.session.SqlSession;
  * @author Kazuki Shimizu
  */
 public class MapperMethod {
-
+  //sql命令
   private final SqlCommand command;
   private final MethodSignature method;
 
@@ -54,10 +54,18 @@ public class MapperMethod {
     this.method = new MethodSignature(config, mapperInterface, method);
   }
 
+  /**
+   * sql执行的最终方法
+   * @param sqlSession
+   * @param args
+   * @return
+   */
   public Object execute(SqlSession sqlSession, Object[] args) {
     Object result;
+    //获取命令的类型，然后根据不同类型去执行
     switch (command.getType()) {
       case INSERT: {
+        //整理参数
         Object param = method.convertArgsToSqlCommandParam(args);
         result = rowCountResult(sqlSession.insert(command.getName(), param));
         break;
@@ -305,6 +313,11 @@ public class MapperMethod {
       this.paramNameResolver = new ParamNameResolver(configuration, method);
     }
 
+    /**
+     * 将args转化为sql的命令参数
+     * @param args
+     * @return
+     */
     public Object convertArgsToSqlCommandParam(Object[] args) {
       return paramNameResolver.getNamedParams(args);
     }

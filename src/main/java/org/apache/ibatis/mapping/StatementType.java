@@ -16,8 +16,15 @@
 package org.apache.ibatis.mapping;
 
 /**
+ * 在mapper文件中可以使用StatementType标记使用什么对象操作SQL语句。
+ * 默认是{@link StatementType#PREPARED}
  * @author Clinton Begin
  */
 public enum StatementType {
-  STATEMENT, PREPARED, CALLABLE
+  //直接操作sql，不进行预编译，获取数据：$ ————Statement
+  STATEMENT,
+  //预处理，参数，进行预编译，获取数据 ：# ————PreparedStatement （默认）
+  PREPARED,
+  //执行存储过程————CallableStatement
+  CALLABLE
 }

@@ -29,6 +29,7 @@ import org.apache.ibatis.scripting.LanguageDriver;
 import org.apache.ibatis.session.Configuration;
 
 /**
+ * 映射语句
  * @author Clinton Begin
  */
 public final class MappedStatement {
@@ -53,6 +54,7 @@ public final class MappedStatement {
   private String[] keyColumns;
   private boolean hasNestedResultMaps;
   private String databaseId;
+  //语句日志
   private Log statementLog;
   private LanguageDriver lang;
   private String[] resultSets;

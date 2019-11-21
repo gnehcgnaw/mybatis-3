@@ -34,10 +34,8 @@ import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.executor.result.DefaultMapResultHandler;
 import org.apache.ibatis.executor.result.DefaultResultContext;
 import org.apache.ibatis.mapping.MappedStatement;
-import org.apache.ibatis.session.Configuration;
-import org.apache.ibatis.session.ResultHandler;
-import org.apache.ibatis.session.RowBounds;
-import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.*;
+import org.apache.ibatis.transaction.Transaction;
 
 /**
  * {@link SqlSession}的默认实现。 请注意，此类不是线程安全的。
@@ -195,6 +193,12 @@ public class DefaultSqlSession implements SqlSession {
     try {
       dirty = true;
       MappedStatement ms = configuration.getMappedStatement(statement);
+      /**
+       *  默认情况下这里的executor是 CachingExecutor 为什么呢？？
+       *  参看：{@link Configuration#newExecutor(Transaction, ExecutorType)}
+       *
+       *  所以这个方法应该是 {@link org.apache.ibatis.executor.CachingExecutor#update(MappedStatement, Object)}
+       */
       return executor.update(ms, wrapCollection(parameter));
     } catch (Exception e) {
       throw ExceptionFactory.wrapException("Error updating database.  Cause: " + e, e);
@@ -287,6 +291,12 @@ public class DefaultSqlSession implements SqlSession {
     return configuration;
   }
 
+  /**
+   * 通过mapper类型获取mapper
+   * @param type Mapper interface class
+   * @param <T>
+   * @return
+   */
   @Override
   public <T> T getMapper(Class<T> type) {
     return configuration.getMapper(type, this);
@@ -317,6 +327,11 @@ public class DefaultSqlSession implements SqlSession {
     return (!autoCommit && dirty) || force;
   }
 
+  /**
+   * 包装类型
+   * @param object
+   * @return
+   */
   private Object wrapCollection(final Object object) {
     if (object instanceof Collection) {
       StrictMap<Object> map = new StrictMap<>();

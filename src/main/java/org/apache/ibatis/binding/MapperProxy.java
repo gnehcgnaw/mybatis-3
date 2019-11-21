@@ -74,12 +74,28 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
     lookupConstructor = lookup;
   }
 
+  /**
+   * MapperProxy#invoke
+   * @param proxy 代理对象
+   * @param method  需要执行的方法
+   * @param args  参数列表
+   * @return
+   * @throws Throwable
+   */
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     try {
+      /**
+       * 这里执行这个判断的意义是什么？
+       *    假如我们需要执行的方法是Object中的方法，并且我们没有覆盖重写，那么就直接调用就行。
+       */
       if (Object.class.equals(method.getDeclaringClass())) {
         return method.invoke(this, args);
-      } else if (method.isDefault()) {
+      }
+      /**
+       * Java8之后有了default方法
+       */
+      else if (method.isDefault()) {
         if (privateLookupInMethod == null) {
           return invokeDefaultMethodJava8(proxy, method, args);
         } else {
@@ -89,10 +105,20 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
     } catch (Throwable t) {
       throw ExceptionUtil.unwrapThrowable(t);
     }
+    /**
+     * 映射器方法
+     * 缓存当前方法，这个其实就是mybatis的一级缓存
+     * //todo 一级缓存的时候再去分析
+     */
     final MapperMethod mapperMethod = cachedMapperMethod(method);
     return mapperMethod.execute(sqlSession, args);
   }
 
+  /**
+   * 缓存当前方法，并且返回
+   * @param method
+   * @return
+   */
   private MapperMethod cachedMapperMethod(Method method) {
     return methodCache.computeIfAbsent(method,
         k -> new MapperMethod(mapperInterface, method, sqlSession.getConfiguration()));

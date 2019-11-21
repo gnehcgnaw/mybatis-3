@@ -15,6 +15,7 @@
  */
 package org.apache.ibatis.executor.statement;
 
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -45,6 +46,7 @@ public class PreparedStatementHandler extends BaseStatementHandler {
   public int update(Statement statement) throws SQLException {
     PreparedStatement ps = (PreparedStatement) statement;
     ps.execute();
+    //获取更新行数
     int rows = ps.getUpdateCount();
     Object parameterObject = boundSql.getParameterObject();
     KeyGenerator keyGenerator = mappedStatement.getKeyGenerator();
@@ -72,19 +74,41 @@ public class PreparedStatementHandler extends BaseStatementHandler {
     return resultSetHandler.handleCursorResultSets(ps);
   }
 
+  /**
+   * 实例化语句
+   * @param connection   我们在mybatis-config.xml指定了{@link org.apache.ibatis.datasource.pooled.PooledConnection }的代理对象
+   * @return
+   * @throws SQLException
+   */
   @Override
   protected Statement instantiateStatement(Connection connection) throws SQLException {
     String sql = boundSql.getSql();
     if (mappedStatement.getKeyGenerator() instanceof Jdbc3KeyGenerator) {
       String[] keyColumnNames = mappedStatement.getKeyColumns();
       if (keyColumnNames == null) {
+        /**
+         * {@link org.apache.ibatis.datasource.pooled.PooledConnection}的代理对象，即
+         * {@link org.apache.ibatis.datasource.pooled.PooledConnection#invoke(Object, Method, Object[])}
+         */
         return connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
       } else {
+        /**
+         * {@link org.apache.ibatis.datasource.pooled.PooledConnection}的代理对象，即
+         * {@link org.apache.ibatis.datasource.pooled.PooledConnection#invoke(Object, Method, Object[])}
+         */
         return connection.prepareStatement(sql, keyColumnNames);
       }
     } else if (mappedStatement.getResultSetType() == ResultSetType.DEFAULT) {
+      /**
+       * {@link org.apache.ibatis.datasource.pooled.PooledConnection}的代理对象，即
+       * {@link org.apache.ibatis.datasource.pooled.PooledConnection#invoke(Object, Method, Object[])}
+       */
       return connection.prepareStatement(sql);
     } else {
+      /**
+       * {@link org.apache.ibatis.datasource.pooled.PooledConnection}的代理对象，即
+       * {@link org.apache.ibatis.datasource.pooled.PooledConnection#invoke(Object, Method, Object[])}
+       */
       return connection.prepareStatement(sql, mappedStatement.getResultSetType().getValue(), ResultSet.CONCUR_READ_ONLY);
     }
   }

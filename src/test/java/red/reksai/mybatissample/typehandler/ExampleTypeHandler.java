@@ -11,6 +11,7 @@ import red.reksai.mybatissample.mapper.BlogMapper;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.lang.reflect.Method;
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,6 +19,7 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Random;
 
 /**
  * 自定义一个TypeHandler用来将javatype的日期类型和jdbctype的VARCHAR进行转换
@@ -79,12 +81,21 @@ class Main{
     for (TypeHandler typeHandler : typeHandlers){
       System.out.println(typeHandler.getClass().getName());
     }
+    /**
+     * 有代码分析以及上面的注释，可以知道这里的sqlSession是{@link org.apache.ibatis.session.defaults.DefaultSqlSession},
+     * 那么调用的方法就是：{@link org.apache.ibatis.session.defaults.DefaultSqlSession#getMapper(Class)}
+     *
+     * 这里返回的其实是一个BlogMapper的代理对象，即MapperProxy创建出来的对象。
+     */
     BlogMapper blogMapper = sqlSession.getMapper(BlogMapper.class);
     Blog blog = new Blog();
-    blog.setBlogTitle("mybatis_learning");
-    blog.setBlogContext("typeHandler learning");
+    blog.setBlogTitle("mybatis_learning"+new Date());
+    blog.setBlogContext("typeHandler learning"+new Date());
     blog.setCreateTime(new Date());
     blog.setModifyTime(new Date());
+    /**
+     * 代理对象执行方法，其实执行的是 {@link org.apache.ibatis.binding.MapperProxy#invoke(Object, Method, Object[])}
+     */
     int insertCount = blogMapper.insertBlog(blog);
     sqlSession.commit();
     System.out.println("添加条数为："+insertCount);

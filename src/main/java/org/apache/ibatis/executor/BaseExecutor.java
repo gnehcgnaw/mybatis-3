@@ -114,6 +114,9 @@ public abstract class BaseExecutor implements Executor {
       throw new ExecutorException("Executor was closed.");
     }
     clearLocalCache();
+    /**
+     * {@link SimpleExecutor#doUpdate(MappedStatement, Object)}
+     */
     return doUpdate(ms, parameter);
   }
 
@@ -332,6 +335,12 @@ public abstract class BaseExecutor implements Executor {
     return list;
   }
 
+  /**
+   * 获取连接
+   * @param statementLog
+   * @return
+   * @throws SQLException
+   */
   protected Connection getConnection(Log statementLog) throws SQLException {
     Connection connection = transaction.getConnection();
     if (statementLog.isDebugEnabled()) {

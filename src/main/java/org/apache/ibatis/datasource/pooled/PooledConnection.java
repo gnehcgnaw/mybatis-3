@@ -24,6 +24,7 @@ import java.sql.SQLException;
 import org.apache.ibatis.reflection.ExceptionUtil;
 
 /**
+ * 连接池连接
  * @author Clinton Begin
  */
 class PooledConnection implements InvocationHandler {
