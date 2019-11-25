@@ -428,7 +428,8 @@ public class XNode {
    */
   private String parseBody(Node node) {
     String data = getBodyData(node);
-    if (data == null) { //当前节点不是文本节点
+    //当前节点不是文本节点
+    if (data == null) {
       //处理子节点
       NodeList children = node.getChildNodes();
       for (int i = 0; i < children.getLength(); i++) {
