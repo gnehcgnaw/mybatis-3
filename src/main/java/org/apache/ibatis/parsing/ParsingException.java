@@ -18,6 +18,8 @@ package org.apache.ibatis.parsing;
 import org.apache.ibatis.exceptions.PersistenceException;
 
 /**
+ * 解析异常
+ *    其实这个类在mybatis实际中没有用到，只有mybatis测试用例中有测试过。
  * @author Clinton Begin
  */
 public class ParsingException extends PersistenceException {

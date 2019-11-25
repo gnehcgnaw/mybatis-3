@@ -29,40 +29,82 @@ import org.apache.ibatis.type.TypeHandler;
 import org.apache.ibatis.type.TypeHandlerRegistry;
 
 /**
+ * 基础构建器抽象类
+ *    为子类提供通用的工具类。
  * @author Clinton Begin
  */
 public abstract class BaseBuilder {
+  /**
+   * mybatis Configuration对象
+   */
   protected final Configuration configuration;
   protected final TypeAliasRegistry typeAliasRegistry;
   protected final TypeHandlerRegistry typeHandlerRegistry;
 
+  /**
+   * 构造方法
+   * @param configuration
+   */
   public BaseBuilder(Configuration configuration) {
     this.configuration = configuration;
     this.typeAliasRegistry = this.configuration.getTypeAliasRegistry();
     this.typeHandlerRegistry = this.configuration.getTypeHandlerRegistry();
   }
 
+  /**
+   * 获取Configuration对象
+   * @return
+   */
   public Configuration getConfiguration() {
     return configuration;
   }
 
+  /**
+   * 我没有发现这个方法有什么用，我在stackoverflow上给出了提问
+   *  https://stackoverflow.com/questions/58987197/in-mybatis-basebuilderparseexpressionstring-regex-string-defaultvalue-is-th
+   * 创建正则表达式
+   * @param regex 指定表达式
+   * @param defaultValue  默认表达式
+   * @return  正则表达式
+   */
   protected Pattern parseExpression(String regex, String defaultValue) {
     return Pattern.compile(regex == null ? defaultValue : regex);
   }
 
+  /**
+   *  将字符串转化成对应的数据类型的值
+   * @param value
+   * @param defaultValue
+   * @return
+   */
   protected Boolean booleanValueOf(String value, Boolean defaultValue) {
     return value == null ? defaultValue : Boolean.valueOf(value);
   }
-
+  /**
+   *  将字符串转化成对应的数据类型的值
+   * @param value
+   * @param defaultValue
+   * @return
+   */
   protected Integer integerValueOf(String value, Integer defaultValue) {
     return value == null ? defaultValue : Integer.valueOf(value);
   }
-
+  /**
+   *  将字符串转化成对应的数据类型的值
+   * @param value
+   * @param defaultValue
+   * @return
+   */
   protected Set<String> stringSetValueOf(String value, String defaultValue) {
     value = value == null ? defaultValue : value;
     return new HashSet<>(Arrays.asList(value.split(",")));
   }
 
+  /**
+   * 解析对应的jdbcType类型
+   * @param alias
+   * @return
+   */
   protected JdbcType resolveJdbcType(String alias) {
     if (alias == null) {
       return null;
@@ -74,6 +116,11 @@ public abstract class BaseBuilder {
     }
   }
 
+  /**
+   * 解析对应的 ResultSetType 类型
+   * @param alias
+   * @return
+   */
   protected ResultSetType resolveResultSetType(String alias) {
     if (alias == null) {
       return null;
@@ -85,6 +132,11 @@ public abstract class BaseBuilder {
     }
   }
 
+  /**
+   * 解析对应的 ParameterMode 类型
+   * @param alias
+   * @return
+   */
   protected ParameterMode resolveParameterMode(String alias) {
     if (alias == null) {
       return null;
@@ -96,18 +148,31 @@ public abstract class BaseBuilder {
     }
   }
 
+  /**
+   * 创建指定对象
+   * @param alias
+   * @return
+   */
   protected Object createInstance(String alias) {
+    //获取对应的类型
     Class<?> clazz = resolveClass(alias);
     if (clazz == null) {
       return null;
     }
     try {
+      //创建对象
       return resolveClass(alias).getDeclaredConstructor().newInstance();
     } catch (Exception e) {
       throw new BuilderException("Error creating instance. Cause: " + e, e);
     }
   }
 
+  /**
+   * 获得对应的类型
+   * @param alias
+   * @param <T>
+   * @return
+   */
   protected <T> Class<? extends T> resolveClass(String alias) {
     if (alias == null) {
       return null;
@@ -123,7 +188,14 @@ public abstract class BaseBuilder {
     if (typeHandlerAlias == null) {
       return null;
     }
+    //得到TypeHandler对象
     Class<?> type = resolveClass(typeHandlerAlias);
+    /**
+     * isAssignableFrom()方法与instanceof关键字的区别总结为以下两个点：
+     *
+     *  isAssignableFrom()方法是从类继承的角度去判断，instanceof关键字是从实例继承的角度去判断。
+     *  isAssignableFrom()方法是判断是否为某个类的父类，instanceof关键字是判断是否某个类的子类。
+     */
     if (type != null && !TypeHandler.class.isAssignableFrom(type)) {
       throw new BuilderException("Type " + type.getName() + " is not a valid TypeHandler because it does not implement TypeHandler interface");
     }
@@ -132,6 +204,12 @@ public abstract class BaseBuilder {
     return resolveTypeHandler(javaType, typeHandlerType);
   }
 
+  /**
+   * 从 typeHandlerRegistry 中获得或创建对应的 TypeHandler 对象
+   * @param javaType
+   * @param typeHandlerType
+   * @return
+   */
   protected TypeHandler<?> resolveTypeHandler(Class<?> javaType, Class<? extends TypeHandler<?>> typeHandlerType) {
     if (typeHandlerType == null) {
       return null;
@@ -145,6 +223,12 @@ public abstract class BaseBuilder {
     return handler;
   }
 
+  /**
+   * 获取一个对象
+   * @param alias
+   * @param <T>
+   * @return
+   */
   protected <T> Class<? extends T> resolveAlias(String alias) {
     return typeAliasRegistry.resolveAlias(alias);
   }

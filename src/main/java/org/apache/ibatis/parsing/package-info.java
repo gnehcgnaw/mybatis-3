@@ -15,5 +15,8 @@
  */
 /**
  * Parsing utils
+ * 解析器模块，主要提供了两个功能：
+ *  1. 对XPath进行封装，为Mybatis初始化时解析mybatis-config.xml配置文件以及mapper映射配置文件提供支持。
+ *  2. 为处理动态SQL语句中的占位符提供支持。
  */
 package org.apache.ibatis.parsing;

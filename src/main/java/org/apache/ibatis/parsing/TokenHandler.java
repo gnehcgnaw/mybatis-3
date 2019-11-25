@@ -16,6 +16,12 @@
 package org.apache.ibatis.parsing;
 
 /**
+ * 占位符解析器接口
+ * mybatis提供的实现如下所示：
+ * @see org.apache.ibatis.parsing.PropertyParser.VariableTokenHandler
+ * @see org.apache.ibatis.builder.SqlSourceBuilder.ParameterMappingTokenHandler
+ * @see org.apache.ibatis.scripting.xmltags.TextSqlNode.DynamicCheckerTokenParser
+ * @see org.apache.ibatis.scripting.xmltags.TextSqlNode.BindingTokenParser
  * @author Clinton Begin
  */
 public interface TokenHandler {

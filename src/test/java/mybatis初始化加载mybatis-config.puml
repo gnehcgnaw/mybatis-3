@@ -1,0 +1,20 @@
+@startuml
+autonumber
+actor User
+User-> SqlSessionFactoryBuilder ** : new
+SqlSessionFactoryBuilder -> SqlSessionFactoryBuilder++: build(inputStream)
+SqlSessionFactoryBuilder ->SqlSessionFactoryBuilder++ : build(environment,String ,Properties)
+SqlSessionFactoryBuilder -> XMLConfigBuilder++** :new
+XMLConfigBuilder -> XPathParser++** :new
+XMLConfigBuilder -> XMLConfigBuilder:XMLConfigBuilder(xPathParser,environment,properties)
+XPathParser -> XMLConfigBuilder:XMLConfigBuilder
+XMLConfigBuilder -> XMLConfigBuilder ++:parse()
+XMLConfigBuilder -> XMLConfigBuilder ++:parseConfiguration(XNode)
+XMLConfigBuilder -> XMLConfigBuilder ++:propertiesElement(XNode)
+
+XMLConfigBuilder -> SqlSessionFactoryBuilder:Configuration
+SqlSessionFactoryBuilder -> SqlSessionFactoryBuilder:build(Configuration)
+SqlSessionFactoryBuilder -> User: SqlSessionFactory
+@enduml
+
+

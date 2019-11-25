@@ -25,6 +25,16 @@ import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
 
 /**
+ * ResolverUtil可以根据指定的条件查找指定包下的类，其中使用的条件由Test接口表示。
+ *
+ * ResolverUtil使用{@link #classloader}字段记录类加载器（{@link ClassLoader}类型），
+ * 默认情况下，使用的是当前线程上下文绑定的ClassLoader，我们可以使用{@link #setClassLoader(ClassLoader)}修改使用的类加载器。
+ *
+ * Test接口下有两个实现：
+ *    {@link IsA}：用于检测类是否继承了指定的接口和类；
+ *    {@link AnnotatedWith}：用于检测类是否添加了指定的注解；
+ *   开发人员也可以实现自己Test接口，实现指定条件的检测。
+ *
  * <p>ResolverUtil is used to locate classes that are available in the/a class path and meet
  * arbitrary conditions. The two most common conditions are that a class implements/extends
  * another class, or that is it annotated with a specific annotation. However, through the use
@@ -57,7 +67,7 @@ import org.apache.ibatis.logging.LogFactory;
  * @author Tim Fennell
  */
 public class ResolverUtil<T> {
-  /*
+  /**
    * An instance of Log to use for logging in this class.
    */
   private static final Log log = LogFactory.getLog(ResolverUtil.class);
@@ -126,6 +136,7 @@ public class ResolverUtil<T> {
   private Set<Class<? extends T>> matches = new HashSet<>();
 
   /**
+   * 查找类时要使用的ClassLoader。如果为null，则将使用Thread.currentThread().getContextClassLoader()返回的ClassLoader,参见{@link #getClassLoader()}
    * The ClassLoader to use when looking for classes. If null then the ClassLoader returned
    * by Thread.currentThread().getContextClassLoader() will be used.
    */

@@ -19,6 +19,5 @@ public class MyBatisSimpleDemo {
     SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
     BlogMapper blogMapper = sqlSessionFactory.openSession().getMapper(BlogMapper.class);
     System.out.println(blogMapper.selectBlog(1));
-
   }
 }

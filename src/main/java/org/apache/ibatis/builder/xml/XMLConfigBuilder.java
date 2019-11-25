@@ -52,10 +52,21 @@ import org.apache.ibatis.type.JdbcType;
  * @author Kazuki Shimizu
  */
 public class XMLConfigBuilder extends BaseBuilder {
-  //是否被解析过
+  /**
+   *   是否被解析过
+   */
   private boolean parsed;
+  /**
+   * 基于 Java XPath 解析器
+   */
   private final XPathParser parser;
+  /**
+   * 环境
+   */
   private String environment;
+  /**
+   * ReflectorFactory 对象    //todo
+   */
   private final ReflectorFactory localReflectorFactory = new DefaultReflectorFactory();
 
   public XMLConfigBuilder(Reader reader) {
@@ -83,6 +94,9 @@ public class XMLConfigBuilder extends BaseBuilder {
   }
 
   private XMLConfigBuilder(XPathParser parser, String environment, Properties props) {
+    /**
+     * 创建一个Configuration，调用{@link BaseBuilder#BaseBuilder(Configuration)}
+     */
     super(new Configuration());
     ErrorContext.instance().resource("SQL Mapper Configuration");
     this.configuration.setVariables(props);
@@ -124,6 +138,7 @@ public class XMLConfigBuilder extends BaseBuilder {
       propertiesElement(root.evalNode("properties"));
       //这是 MyBatis 中极为重要的调整设置，它们会改变 MyBatis 的运行时行为，但是我们在编程的时候，很少去触及这一部分。
       Properties settings = settingsAsProperties(root.evalNode("settings"));
+      //todo vfs
       loadCustomVfs(settings);
       loadCustomLogImpl(settings);
       /**

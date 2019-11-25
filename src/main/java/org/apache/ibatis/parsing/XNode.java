@@ -27,17 +27,43 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
+ * 此XNode是对{@link org.w3c.dom.Node}对象做了封装和解析
  * @author Clinton Begin
  */
 public class XNode {
 
+  /**
+   * org.w3c.dom.Node对象
+   */
   private final Node node;
+  /**
+   * Node节点名称
+   */
   private final String name;
+  /**
+   * Node节点内容
+   */
   private final String body;
+  /**
+   * 节点属性集合
+   */
   private final Properties attributes;
+  /**
+   * mybatis-config.xml配置文件中<properties><properties/>节点下定义的键值对
+   */
   private final Properties variables;
+  /**
+   * XPathParser对象，该Node对象由此XPathParser对象生成
+   */
   private final XPathParser xpathParser;
 
+  /**
+   * 此构造会调用{@link #parseAttributes(Node)}和{@link #parseBody(Node)}方法解析{@link org.w3c.dom.Node}对象中的信息，
+   * 初始化节点属性结合{@link #attributes} 和 节点内容{@link #body}，具体的初始化过程参见具体的方法。
+   * @param xpathParser
+   * @param node
+   * @param variables
+   */
   public XNode(XPathParser xpathParser, Node node, Properties variables) {
     this.xpathParser = xpathParser;
     this.node = node;
@@ -375,12 +401,19 @@ public class XNode {
     }
   }
 
+  /**
+   * 解析Node对象中的Attributes属性集合
+   * @param n 节点对象
+   * @return
+   */
   private Properties parseAttributes(Node n) {
     Properties attributes = new Properties();
+    //获取节点的属性结合
     NamedNodeMap attributeNodes = n.getAttributes();
     if (attributeNodes != null) {
       for (int i = 0; i < attributeNodes.getLength(); i++) {
         Node attribute = attributeNodes.item(i);
+        //使用PropertyParser处理每一个属性中的占位符
         String value = PropertyParser.parse(attribute.getNodeValue(), variables);
         attributes.put(attribute.getNodeName(), value);
       }
@@ -388,9 +421,15 @@ public class XNode {
     return attributes;
   }
 
+  /**
+   * 解析Node对象中的信息body字段
+   * @param node
+   * @return
+   */
   private String parseBody(Node node) {
     String data = getBodyData(node);
-    if (data == null) {
+    if (data == null) { //当前节点不是文本节点
+      //处理子节点
       NodeList children = node.getChildNodes();
       for (int i = 0; i < children.getLength(); i++) {
         Node child = children.item(i);
@@ -404,9 +443,11 @@ public class XNode {
   }
 
   private String getBodyData(Node child) {
+    //只处理文本内容
     if (child.getNodeType() == Node.CDATA_SECTION_NODE
         || child.getNodeType() == Node.TEXT_NODE) {
       String data = ((CharacterData) child).getData();
+      //使用PropertyParser处理文本节点中的占位符
       data = PropertyParser.parse(data, variables);
       return data;
     }

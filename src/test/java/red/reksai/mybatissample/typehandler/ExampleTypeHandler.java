@@ -10,6 +10,7 @@ import red.reksai.mybatissample.entity.Blog;
 import red.reksai.mybatissample.mapper.BlogMapper;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.lang.reflect.Method;
 import java.sql.CallableStatement;
@@ -19,7 +20,6 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Random;
 
 /**
  * 自定义一个TypeHandler用来将javatype的日期类型和jdbctype的VARCHAR进行转换
@@ -67,6 +67,8 @@ class Main{
   public static void main(String[] args) throws IOException {
     String resources = "resources/mybatis-config.xml";
     /**
+     *  mybatis初始化开始：
+     *      mybatis初始化的入口是：{@link SqlSessionFactoryBuilder#build(InputStream)}
      *  这里得到的sqlSessionFactory的实现是DefaultSqlSessionFactory
      *  参看：{@link SqlSessionFactoryBuilder#build(Configuration)}}
      */

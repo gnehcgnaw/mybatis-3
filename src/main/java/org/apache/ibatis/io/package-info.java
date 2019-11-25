@@ -14,6 +14,8 @@
  *    limitations under the License.
  */
 /**
+ *
+ * 资源加载
  * Utilities to read resources.
  */
 package org.apache.ibatis.io;

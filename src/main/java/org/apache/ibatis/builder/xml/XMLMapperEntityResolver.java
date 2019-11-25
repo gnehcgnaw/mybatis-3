@@ -25,22 +25,30 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
+ * XML映射器实体解析器
  * Offline entity resolver for the MyBatis DTDs.
  *
  * @author Clinton Begin
  * @author Eduardo Macarron
  */
 public class XMLMapperEntityResolver implements EntityResolver {
-
+  /**
+   * 指定mybatis-config.xml文件和映射文件对应的DTD的SystemId
+   */
   private static final String IBATIS_CONFIG_SYSTEM = "ibatis-3-config.dtd";
   private static final String IBATIS_MAPPER_SYSTEM = "ibatis-3-mapper.dtd";
   private static final String MYBATIS_CONFIG_SYSTEM = "mybatis-3-config.dtd";
   private static final String MYBATIS_MAPPER_SYSTEM = "mybatis-3-mapper.dtd";
 
+  /**
+   * 指定mybatis-config.xml文件和映射文件对应的DTD文件的具体位置
+   */
   private static final String MYBATIS_CONFIG_DTD = "org/apache/ibatis/builder/xml/mybatis-3-config.dtd";
   private static final String MYBATIS_MAPPER_DTD = "org/apache/ibatis/builder/xml/mybatis-3-mapper.dtd";
 
   /**
+   * {@link #resolveEntity(String, String)}是{@link EntityResolver} 接口中定义的方法，具体实现如下所示：
+   *
    * Converts a public DTD into a local one.
    *
    * @param publicId The public id that is what comes after "PUBLIC"
@@ -54,6 +62,9 @@ public class XMLMapperEntityResolver implements EntityResolver {
     try {
       if (systemId != null) {
         String lowerCaseSystemId = systemId.toLowerCase(Locale.ENGLISH);
+        /**
+         *  查找systemId指定的DTD文档，并调用{@link #getInputSource(String, String, String)}方法读取DTD文档
+         */
         if (lowerCaseSystemId.contains(MYBATIS_CONFIG_SYSTEM) || lowerCaseSystemId.contains(IBATIS_CONFIG_SYSTEM)) {
           return getInputSource(MYBATIS_CONFIG_DTD, publicId, systemId);
         } else if (lowerCaseSystemId.contains(MYBATIS_MAPPER_SYSTEM) || lowerCaseSystemId.contains(IBATIS_MAPPER_SYSTEM)) {
@@ -66,6 +77,13 @@ public class XMLMapperEntityResolver implements EntityResolver {
     }
   }
 
+  /**
+   * 读取DTD文档并形成InputSource对象
+   * @param path  文件所在路径
+   * @param publicId    公共标志符
+   * @param systemId    systemId
+   * @return InputSource
+   */
   private InputSource getInputSource(String path, String publicId, String systemId) {
     InputSource source = null;
     if (path != null) {

@@ -60,6 +60,11 @@ public class SqlSessionFactoryBuilder {
     }
   }
 
+  /**
+   * 构建一个SqlSessionFactory
+   * @param inputStream
+   * @return
+   */
   public SqlSessionFactory build(InputStream inputStream) {
     return build(inputStream, null, null);
   }
@@ -69,15 +74,18 @@ public class SqlSessionFactoryBuilder {
   }
 
   public SqlSessionFactory build(InputStream inputStream, Properties properties) {
+    /**
+     * {@link #build(InputStream,String ,Properties)}
+     */
     return build(inputStream, null, properties);
   }
 
   /**
    * 通过构件返回一个SqlSessionFactory
    * @param inputStream 文件流
-   * @param environment
-   * @param properties
-   * @return
+   * @param environment 环境
+   * @param properties  properties变量
+   * @return  SqlSessionFactory对象
    */
   public SqlSessionFactory build(InputStream inputStream, String environment, Properties properties) {
     try {

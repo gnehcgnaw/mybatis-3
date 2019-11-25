@@ -19,15 +19,17 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
+import org.apache.ibatis.parsing.XNode;
 
 /**
+ * VFS表示虚拟文件系统（Virtual File System），它是用来查找指定路径下的资源。
+ * VFS这是一个抽象类，mybatis提供了两个实现类：{@link JBoss6VFS} 和 {@link DefaultVFS}
+ * 用户可以提供自定义的VFS实现类，在mybatis初始化流程时，就提及到这两个扩展点。（{@link org.apache.ibatis.builder.xml.XMLConfigBuilder#loadCustomVfs(Properties) }）
+ *
  * Provides a very simple API for accessing resources within an application server.
  *
  * @author Ben Gunter
@@ -35,14 +37,26 @@ import org.apache.ibatis.logging.LogFactory;
 public abstract class VFS {
   private static final Log log = LogFactory.getLog(VFS.class);
 
-  /** The built-in implementations. */
+  /**
+   * 内置的实现
+   * The built-in implementations.
+   * */
   public static final Class<?>[] IMPLEMENTATIONS = { JBoss6VFS.class, DefaultVFS.class };
 
-  /** The list to which implementations are added by {@link #addImplClass(Class)}. */
+  /**
+   * 用户实现列表：
+   *    使用{@link #addImplClass(Class)}进行添加
+   * The list to which implementations are added by {@link #addImplClass(Class)}.
+   * */
   public static final List<Class<? extends VFS>> USER_IMPLEMENTATIONS = new ArrayList<>();
 
-  /** Singleton instance holder. */
+  /**
+   * 单例实例持有者：
+   *    利用的是单例模式
+   * Singleton instance holder.
+   * */
   private static class VFSHolder {
+    //单例模式，记录了全局唯一的VFS对象
     static final VFS INSTANCE = createVFS();
 
     @SuppressWarnings("unchecked")
@@ -58,6 +72,7 @@ public abstract class VFS {
         Class<? extends VFS> impl = impls.get(i);
         try {
           vfs = impl.getDeclaredConstructor().newInstance();
+          //判断当前vfs是否有效，如果无效就继续循环，如果有效就直接返回
           if (!vfs.isValid()) {
             if (log.isDebugEnabled()) {
               log.debug("VFS implementation " + impl.getName() +
@@ -79,6 +94,8 @@ public abstract class VFS {
   }
 
   /**
+   * 获取单例{@link VFS}实例。如果找不到当前环境的{@link VFS}实现，则此方法返回null。
+   *
    * Get the singleton {@link VFS} instance. If no {@link VFS} implementation can be found for the
    * current environment, then this method returns null.
    */
@@ -171,7 +188,10 @@ public abstract class VFS {
     return Collections.list(Thread.currentThread().getContextClassLoader().getResources(path));
   }
 
-  /** Return true if the {@link VFS} implementation is valid for the current environment. */
+  /**
+   * 如果{@link VFS}实现对当前环境有效，则返回true
+   * Return true if the {@link VFS} implementation is valid for the current environment.
+   * */
   public abstract boolean isValid();
 
   /**
