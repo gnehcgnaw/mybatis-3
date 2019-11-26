@@ -20,6 +20,8 @@ import java.lang.reflect.Field;
 import org.apache.ibatis.reflection.Reflector;
 
 /**
+ *  {@link GetFieldInvoker}/{@link SetFieldInvoker} 通过filed字段封装了对应的Filed对象，
+ *  两者的invoke()方法是通过调用{@link Field#get(Object)} / {@link Field#set(Object, Object)}方法实现的。
  * @author Clinton Begin
  */
 public class SetFieldInvoker implements Invoker {

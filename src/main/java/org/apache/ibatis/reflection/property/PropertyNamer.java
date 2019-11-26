@@ -20,6 +20,10 @@ import java.util.Locale;
 import org.apache.ibatis.reflection.ReflectionException;
 
 /**
+ * 属性工具类
+ *    该方法提供了静态方法帮助完成方法名称到属性名称，以及多种检测操作。
+ * @see PropertyTokenizer
+ * @see PropertyCopier
  * @author Clinton Begin
  */
 public final class PropertyNamer {
@@ -28,6 +32,11 @@ public final class PropertyNamer {
     // Prevent Instantiation of Static Class
   }
 
+  /**
+   * 根据Javabean的规范，获取对应的属性名称
+   * @param name
+   * @return
+   */
   public static String methodToProperty(String name) {
     if (name.startsWith("is")) {
       name = name.substring(2);

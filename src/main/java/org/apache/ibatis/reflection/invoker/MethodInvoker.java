@@ -21,6 +21,7 @@ import java.lang.reflect.Method;
 import org.apache.ibatis.reflection.Reflector;
 
 /**
+ * 通过method字段封装了对应方法的Method对象，其invoke()方法是通过调用Method.invoke()方法实现的。
  * @author Clinton Begin
  */
 public class MethodInvoker implements Invoker {

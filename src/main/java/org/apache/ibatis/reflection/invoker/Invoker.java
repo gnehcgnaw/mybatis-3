@@ -18,10 +18,22 @@ package org.apache.ibatis.reflection.invoker;
 import java.lang.reflect.InvocationTargetException;
 
 /**
+ * 子类有如下所示：
+ * @see AmbiguousMethodInvoker
+ * @see MethodInvoker
+ * @see GetFieldInvoker
+ * @see SetFieldInvoker
  * @author Clinton Begin
  */
 public interface Invoker {
+  /**
+   *   调用获取指定字段的值或执行指定的方法，通过上下文对Invoker接口实现的介绍，可以更好地理解该方法
+   */
   Object invoke(Object target, Object[] args) throws IllegalAccessException, InvocationTargetException;
 
+  /**
+   * 返回属性相应的类型
+   * @return  clazz
+   */
   Class<?> getType();
 }

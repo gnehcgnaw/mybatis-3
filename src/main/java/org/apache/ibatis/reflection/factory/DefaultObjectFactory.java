@@ -37,6 +37,9 @@ import org.apache.ibatis.reflection.Reflector;
  * 默认对象工厂
  *    默认的对象工厂需要做的仅仅是实例化目标类，要么通过默认构造方法，要么在参数映射存在的时候通过参数够着方法来实例化，它不做其他任何的处理。
  *    如果我们想要在创建实例化一个目标的手做点啥其他的动作，可以继承这个类，即DefaultObjectFactory,覆盖父类方法，并在mybatis-config.xml中配置这个对象工厂类。
+ *
+ * 这其实就是一个反射工厂，其create()方法通过调用{@link #instantiateClass(Class, List, List)}方法实现，{@link #instantiateClass(Class, List, List)}会根据
+ * 传入的参数列表选择合适的构造函数实例化对象。
  * @author Clinton Begin
  */
 public class DefaultObjectFactory implements ObjectFactory, Serializable {
@@ -56,9 +59,18 @@ public class DefaultObjectFactory implements ObjectFactory, Serializable {
     return (T) instantiateClass(classToCreate, constructorArgTypes, constructorArgs);
   }
 
+  /**
+   *
+   * @param type
+   * @param constructorArgTypes
+   * @param constructorArgs
+   * @param <T>
+   * @return
+   */
   private  <T> T instantiateClass(Class<T> type, List<Class<?>> constructorArgTypes, List<Object> constructorArgs) {
     try {
       Constructor<T> constructor;
+      //通过无参构造器创建对象
       if (constructorArgTypes == null || constructorArgs == null) {
         constructor = type.getDeclaredConstructor();
         try {
@@ -72,6 +84,7 @@ public class DefaultObjectFactory implements ObjectFactory, Serializable {
           }
         }
       }
+      //根据指定的参数列表查找构造函数，并实例化对象
       constructor = type.getDeclaredConstructor(constructorArgTypes.toArray(new Class[constructorArgTypes.size()]));
       try {
         return constructor.newInstance(constructorArgs.toArray(new Object[constructorArgs.size()]));

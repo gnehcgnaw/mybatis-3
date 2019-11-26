@@ -14,6 +14,12 @@
  *    limitations under the License.
  */
 /**
+ *
+ * Mybatis在进行参数处理、结果集映射等操作时，会涉及大量的反射操作。Java中的反射虽然功能强大，
+ * 但是代码编写起来比较复杂容易出错，为了简化反射操作的相关代码，Mybatis提供了专门的反射模块，
+ * 该模块位于`org.apache.ibatis.reflection`包中，它对常见的反射操作做了封装，
+ * 提供了更加简洁方便的反射API。
+ *
  * Reflection utils.
  */
 package org.apache.ibatis.reflection;
