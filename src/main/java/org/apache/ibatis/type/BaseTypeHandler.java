@@ -24,6 +24,7 @@ import org.apache.ibatis.executor.result.ResultMapException;
 import org.apache.ibatis.session.Configuration;
 
 /**
+ * Mybatis为了用户方便自定义TypeHandler实现，而提供的类。
  * The base {@link TypeHandler} for references a generic type.
  * <p>
  * Important: Since 3.5.0, This class never call the {@link ResultSet#wasNull()} and
@@ -51,6 +52,14 @@ public abstract class BaseTypeHandler<T> extends TypeReference<T> implements Typ
     this.configuration = c;
   }
 
+  /**
+   * 在设置参数的时候，只处理为null的数据，不为空的数据都交给了子类实现
+   * @param ps
+   * @param i 转换第几个参数
+   * @param parameter 参数
+   * @param jdbcType  要转换的jdbcType的类型
+   * @throws SQLException
+   */
   @Override
   public void setParameter(PreparedStatement ps, int i, T parameter, JdbcType jdbcType) throws SQLException {
     if (parameter == null) {
@@ -66,6 +75,7 @@ public abstract class BaseTypeHandler<T> extends TypeReference<T> implements Typ
       }
     } else {
       try {
+        //参数不为空，交给子类处理
         setNonNullParameter(ps, i, parameter, jdbcType);
       } catch (Exception e) {
         throw new TypeException("Error setting non null for parameter #" + i + " with JdbcType " + jdbcType + " . "
@@ -104,7 +114,9 @@ public abstract class BaseTypeHandler<T> extends TypeReference<T> implements Typ
 
   public abstract void setNonNullParameter(PreparedStatement ps, int i, T parameter, JdbcType jdbcType) throws SQLException;
 
+
   /**
+   * 3.5.0版本之后getResult方法，不管是空还是非空数据都要交给子类去处理
    * @param columnName Colunm name, when configuration <code>useColumnLabel</code> is <code>false</code>
    */
   public abstract T getNullableResult(ResultSet rs, String columnName) throws SQLException;

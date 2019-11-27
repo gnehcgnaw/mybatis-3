@@ -143,6 +143,7 @@ public class TypeAliasRegistry {
 
   public void registerAlias(Class<?> type) {
     String alias = type.getSimpleName();
+    //读取Alias注解
     Alias aliasAnnotation = type.getAnnotation(Alias.class);
     if (aliasAnnotation != null) {
       alias = aliasAnnotation.value();

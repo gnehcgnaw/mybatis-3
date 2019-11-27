@@ -230,6 +230,9 @@ public class Reflector {
         : new MethodInvoker(method);
 
     getMethods.put(name, invoker);
+    /**
+     * 获取返回值的Type ，{@link TypeParameterResolver}
+     */
     Type returnType = TypeParameterResolver.resolveReturnType(method, type);
     getTypes.put(name, typeToClass(returnType));
   }
