@@ -16,7 +16,7 @@ public class MyBatisSimpleDemo {
   public static void main(String[] args) throws IOException {
     String resource = "resources/mybatis-config.xml" ;
     InputStream inputStream = Resources.getResourceAsStream(resource);
-    SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+    SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream,"development");
     BlogMapper blogMapper = sqlSessionFactory.openSession().getMapper(BlogMapper.class);
     System.out.println(blogMapper.selectBlog(1));
   }

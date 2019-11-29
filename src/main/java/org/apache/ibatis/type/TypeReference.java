@@ -19,6 +19,9 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 /**
+ * 类型引用
+ * 这个类型引用的作用是用于获取原生类型，Java中的原生类型又称为基本类型，即byte、short、int、long、float、double、boolean、char八大基本数据类型。
+ *
  * References a generic type.
  *
  * @param <T> the referenced type

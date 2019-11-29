@@ -27,18 +27,37 @@ import org.apache.ibatis.reflection.invoker.MethodInvoker;
 import org.apache.ibatis.reflection.property.PropertyTokenizer;
 
 /**
+ * MetaClass通过Reflector和PropertyTokenizer组合使用，实现了对复杂的属性表达式的解析，并实现了获取指定属性描述信息的功能。
  * @author Clinton Begin
  */
 public class MetaClass {
 
+  /**
+   * ReflectorFactory对象，用于缓存Reflector对象
+   */
   private final ReflectorFactory reflectorFactory;
+  /**
+   *   在创建MetaClass时会指定一个类，该Reflector对象会用于记录该类相关信息
+   */
   private final Reflector reflector;
 
+  /**
+   * 此构造方法是一个private
+   * @param type
+   * @param reflectorFactory
+   */
   private MetaClass(Class<?> type, ReflectorFactory reflectorFactory) {
     this.reflectorFactory = reflectorFactory;
+    //创建reflector对象，默认使用的是DefaultReflectorFactory.findForClass()方法
     this.reflector = reflectorFactory.findForClass(type);
   }
 
+  /**
+   * 使用静态方法创建MetaClass对象
+   * @param type
+   * @param reflectorFactory
+   * @return
+   */
   public static MetaClass forClass(Class<?> type, ReflectorFactory reflectorFactory) {
     return new MetaClass(type, reflectorFactory);
   }
@@ -48,7 +67,13 @@ public class MetaClass {
     return MetaClass.forClass(propType, reflectorFactory);
   }
 
+  /**
+   * 只查找"."导航的属性，并且没有检测下标
+   * @param name 要查找的属性名称
+   * @return
+   */
   public String findProperty(String name) {
+    //委托给buildProperty()方法实现
     StringBuilder prop = buildProperty(name, new StringBuilder());
     return prop.length() > 0 ? prop.toString() : null;
   }
@@ -168,12 +193,15 @@ public class MetaClass {
   }
 
   private StringBuilder buildProperty(String name, StringBuilder builder) {
+    //解析表达式
     PropertyTokenizer prop = new PropertyTokenizer(name);
+    //判断是否还有子表达式
     if (prop.hasNext()) {
       String propertyName = reflector.findPropertyName(prop.getName());
       if (propertyName != null) {
         builder.append(propertyName);
         builder.append(".");
+        //查找属性所对应的MetaClass
         MetaClass metaProp = metaClassForProperty(propertyName);
         metaProp.buildProperty(prop.getChildren(), builder);
       }

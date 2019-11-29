@@ -28,13 +28,23 @@ import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.Configuration;
 
 /**
+ * UnknownTypeHandler是一个特殊的类型处理器，它也继承了BaseTypeHandler抽象类，并实现了对应的抽象方法。
+ * 该类的特殊地方在于，它是一个未知的类型处理器，其中定义了一个默认的类型处理器ObjectTypeHandler ,
+ * 在进行类型转换的时候，根据jdbc和Java类型判断需要的类型处理器，如果无法判断则使用默认的类型处理器ObjectTypeHandler。
  * @author Clinton Begin
  */
 public class UnknownTypeHandler extends BaseTypeHandler<Object> {
 
+  /**
+   *   默认类型处理器
+   */
   private static final ObjectTypeHandler OBJECT_TYPE_HANDLER = new ObjectTypeHandler();
+
   // TODO Rename to 'configuration' after removing the 'configuration' property(deprecated property) on parent class
   private final Configuration config;
+  /**
+   * TypeHandlerRegistry供应商
+   */
   private final Supplier<TypeHandlerRegistry> typeHandlerRegistrySupplier;
 
   /**
@@ -45,6 +55,7 @@ public class UnknownTypeHandler extends BaseTypeHandler<Object> {
    */
   public UnknownTypeHandler(Configuration configuration) {
     this.config = configuration;
+    //从configuration中获取TypeHandlerRegistry
     this.typeHandlerRegistrySupplier = configuration::getTypeHandlerRegistry;
   }
 

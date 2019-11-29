@@ -128,6 +128,11 @@ public class TypeAliasRegistry {
     registerAliases(packageName, Object.class);
   }
 
+  /**
+   * 扫描指定包下面所有的类，并为其类的子类添加别名
+   * @param packageName
+   * @param superType
+   */
   public void registerAliases(String packageName, Class<?> superType) {
     ResolverUtil<Class<?>> resolverUtil = new ResolverUtil<>();
     resolverUtil.find(new ResolverUtil.IsA(superType), packageName);
@@ -142,6 +147,7 @@ public class TypeAliasRegistry {
   }
 
   public void registerAlias(Class<?> type) {
+    //获取类的简单名称，不包括包名
     String alias = type.getSimpleName();
     //读取Alias注解
     Alias aliasAnnotation = type.getAnnotation(Alias.class);

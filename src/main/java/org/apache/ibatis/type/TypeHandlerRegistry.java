@@ -70,6 +70,9 @@ public final class TypeHandlerRegistry {
    * 例如：Java类型中的String 可能转换为数据库的char、varchar等多种类型，所以存在一对多关系
    */
   private final Map<Type, Map<JdbcType, TypeHandler<?>>> typeHandlerMap = new ConcurrentHashMap<>();
+  /**
+   * 未知类型TypeHandler
+   */
   private final TypeHandler<Object> unknownTypeHandler;
   /**
    * 记录了全部的TypeHandler的类型以及该类型相应的TypeHandler对象
@@ -81,6 +84,9 @@ public final class TypeHandlerRegistry {
    */
   private static final Map<JdbcType, TypeHandler<?>> NULL_TYPE_HANDLER_MAP = Collections.emptyMap();
 
+  /**
+   * 默认枚举类型处理器
+   */
   private Class<? extends TypeHandler> defaultEnumTypeHandler = EnumTypeHandler.class;
 
   /**
@@ -340,7 +346,7 @@ public final class TypeHandlerRegistry {
   public TypeHandler<Object> getUnknownTypeHandler() {
     return unknownTypeHandler;
   }
-
+  // 1
   public void register(JdbcType jdbcType, TypeHandler<?> handler) {
     jdbcTypeHandlerMap.put(jdbcType, handler);
   }
@@ -351,7 +357,7 @@ public final class TypeHandlerRegistry {
   //
 
   // Only handler
-
+  // 2
   @SuppressWarnings("unchecked")
   public <T> void register(TypeHandler<T> typeHandler) {
     boolean mappedTypeFound = false;
@@ -363,6 +369,9 @@ public final class TypeHandlerRegistry {
       }
     }
     // @since 3.1.0 - try to auto-discover the mapped type
+    /**
+     * 从3.1.0版本开始，可以根据typeHandler类型自动查找对应的Java类型，这需要我们的TypeHandler实现类同时继承{@link TypeReference}这个抽象类
+     */
     if (!mappedTypeFound && typeHandler instanceof TypeReference) {
       try {
         TypeReference<T> typeReference = (TypeReference<T>) typeHandler;
@@ -378,12 +387,12 @@ public final class TypeHandlerRegistry {
   }
 
   // java type + handler
-
+  // 3
   public <T> void register(Class<T> javaType, TypeHandler<? extends T> typeHandler) {
     register((Type) javaType, typeHandler);
   }
 
-
+  // 4
   private <T> void register(Type javaType, TypeHandler<? extends T> typeHandler) {
     //获取TypeHandler的MappedJdbcTypes注解
     MappedJdbcTypes mappedJdbcTypes = typeHandler.getClass().getAnnotation(MappedJdbcTypes.class);
@@ -400,13 +409,13 @@ public final class TypeHandlerRegistry {
       register(javaType, null, typeHandler);
     }
   }
-
+  // 5
   public <T> void register(TypeReference<T> javaTypeReference, TypeHandler<? extends T> handler) {
     register(javaTypeReference.getRawType(), handler);
   }
 
   // java type + jdbc type + handler
-
+  // 6
   public <T> void register(Class<T> type, JdbcType jdbcType, TypeHandler<? extends T> handler) {
     register((Type) type, jdbcType, handler);
   }
@@ -417,6 +426,7 @@ public final class TypeHandlerRegistry {
    * @param jdbcType
    * @param handler
    */
+  // 7
   private void register(Type javaType, JdbcType jdbcType, TypeHandler<?> handler) {
     //检测是否明确指定了TypeHandler能够处理的Java类型
     if (javaType != null) {
@@ -440,7 +450,7 @@ public final class TypeHandlerRegistry {
   //
 
   // Only handler type
-
+  // 8
   public void register(Class<?> typeHandlerClass) {
     boolean mappedTypeFound = false;
     MappedTypes mappedTypes = typeHandlerClass.getAnnotation(MappedTypes.class);
@@ -458,23 +468,30 @@ public final class TypeHandlerRegistry {
   }
 
   // java type + handler type
-
+  // 9
   public void register(String javaTypeClassName, String typeHandlerClassName) throws ClassNotFoundException {
     register(Resources.classForName(javaTypeClassName), Resources.classForName(typeHandlerClassName));
   }
-
+  // 10
   public void register(Class<?> javaTypeClass, Class<?> typeHandlerClass) {
     register(javaTypeClass, getInstance(javaTypeClass, typeHandlerClass));
   }
 
   // java type + jdbc type + handler type
-
+  // 11
   public void register(Class<?> javaTypeClass, JdbcType jdbcType, Class<?> typeHandlerClass) {
     register(javaTypeClass, jdbcType, getInstance(javaTypeClass, typeHandlerClass));
   }
 
   // Construct a handler (used also from Builders)
 
+  /**
+   * 通过反射得到TypeHandler
+   * @param javaTypeClass
+   * @param typeHandlerClass
+   * @param <T>
+   * @return
+   */
   @SuppressWarnings("unchecked")
   public <T> TypeHandler<T> getInstance(Class<?> javaTypeClass, Class<?> typeHandlerClass) {
     if (javaTypeClass != null) {
@@ -497,7 +514,7 @@ public final class TypeHandlerRegistry {
 
   // scan
   //注册扫面整个包下面的TypeHandler实现类
-
+  // 12
   public void register(String packageName) {
     ResolverUtil<Class<?>> resolverUtil = new ResolverUtil<>();
     resolverUtil.find(new ResolverUtil.IsA(TypeHandler.class), packageName);

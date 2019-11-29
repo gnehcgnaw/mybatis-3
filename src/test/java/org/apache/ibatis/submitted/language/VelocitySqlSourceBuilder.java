@@ -33,6 +33,7 @@ import org.apache.ibatis.type.JdbcType;
 
 /**
  * Just a test case. Not a real Velocity implementation.
+ * 只是一个测试案例。不是真正的Velocity实现。
  */
 public class VelocitySqlSourceBuilder extends BaseBuilder {
 

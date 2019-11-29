@@ -49,6 +49,7 @@
   <!--9. mappers 映射器-->
   <mappers>
     <mapper resource="resources/mapper/BlogMapper.xml"/>
+    <mapper resource="resources/mapper/UserMapper.xml"/>
   </mappers>
 
 </configuration>
