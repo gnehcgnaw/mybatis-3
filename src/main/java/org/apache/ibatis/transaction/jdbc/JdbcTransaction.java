@@ -38,18 +38,42 @@ import org.apache.ibatis.transaction.TransactionException;
 public class JdbcTransaction implements Transaction {
 
   private static final Log log = LogFactory.getLog(JdbcTransaction.class);
-
+  /**
+   * 事务对应的数据库连接
+   */
   protected Connection connection;
+  /**
+   * 数据库连接所属的DataSource
+   */
   protected DataSource dataSource;
+  /**
+   * 事务的隔离级别
+   */
   protected TransactionIsolationLevel level;
+  /**
+   * 是否自动提交
+   */
   protected boolean autoCommit;
 
+  /**
+   * 使用此构造方法，设置了除连接以外的值，至于connection字段的值，在调用{@link Transaction#getConnection()}的时候，
+   * 调用到{@link DataSource#getConnection()}获取，
+   *
+   * 通过这种方式，Connection对象中设置的事务的隔离级别和是否自动提交属性，不会覆盖（除非为null）。
+   * @param ds
+   * @param desiredLevel
+   * @param desiredAutoCommit
+   */
   public JdbcTransaction(DataSource ds, TransactionIsolationLevel desiredLevel, boolean desiredAutoCommit) {
     dataSource = ds;
     level = desiredLevel;
     autoCommit = desiredAutoCommit;
   }
 
+  /**
+   * 使用此构造方法，事务的隔离级别和是否自动提交使用的都是Connection中的配置
+   * @param connection
+   */
   public JdbcTransaction(Connection connection) {
     this.connection = connection;
   }

@@ -15,5 +15,6 @@
  */
 /**
  * Base package for transactions.
+ * 在实际开发中，控制数据库事务是一件非常重要的工作，Mybatis使用{@link org.apache.ibatis.transaction.Transaction}接口对数据库事务进行了抽象
  */
 package org.apache.ibatis.transaction;
