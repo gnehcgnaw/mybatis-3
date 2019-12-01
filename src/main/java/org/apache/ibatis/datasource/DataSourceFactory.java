@@ -15,6 +15,8 @@
  */
 package org.apache.ibatis.datasource;
 
+import org.apache.ibatis.parsing.XNode;
+
 import java.util.Properties;
 import javax.sql.DataSource;
 
@@ -22,9 +24,18 @@ import javax.sql.DataSource;
  * @author Clinton Begin
  */
 public interface DataSourceFactory {
-
+  /**
+   * 设置DataSource相关属性，
+   * 一切紧跟在初始化完成之后，证明：
+   *  {@link org.apache.ibatis.builder.xml.XMLConfigBuilder#dataSourceElement(XNode)}
+   * @param props
+   */
   void setProperties(Properties props);
 
+  /**
+   * 获取DataSource对象
+   * @return
+   */
   DataSource getDataSource();
 
 }

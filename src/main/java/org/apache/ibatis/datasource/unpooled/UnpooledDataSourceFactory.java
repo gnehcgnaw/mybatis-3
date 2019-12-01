@@ -25,7 +25,9 @@ import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.reflection.SystemMetaObject;
 
 /**
+ * 非连接池模式
  * @author Clinton Begin
+ * @see UnpooledDataSource
  */
 public class UnpooledDataSourceFactory implements DataSourceFactory {
 
@@ -34,6 +36,9 @@ public class UnpooledDataSourceFactory implements DataSourceFactory {
 
   protected DataSource dataSource;
 
+  /**
+   * 直接创建一个{@link UnpooledDataSource}
+   */
   public UnpooledDataSourceFactory() {
     this.dataSource = new UnpooledDataSource();
   }
@@ -41,20 +46,28 @@ public class UnpooledDataSourceFactory implements DataSourceFactory {
   @Override
   public void setProperties(Properties properties) {
     Properties driverProperties = new Properties();
+    //创建DataSource对应的MetaObject
     MetaObject metaDataSource = SystemMetaObject.forObject(dataSource);
+    //遍历properties集合，该集合中配置了数据源需要的信息
     for (Object key : properties.keySet()) {
       String propertyName = (String) key;
+      //以"diver."开头的配置项是对DataSource的配置，记录到diverProperties中保存
       if (propertyName.startsWith(DRIVER_PROPERTY_PREFIX)) {
         String value = properties.getProperty(propertyName);
         driverProperties.setProperty(propertyName.substring(DRIVER_PROPERTY_PREFIX_LENGTH), value);
-      } else if (metaDataSource.hasSetter(propertyName)) {
+      }
+      //是否有该属性对应的setter方法
+      else if (metaDataSource.hasSetter(propertyName)) {
         String value = (String) properties.get(propertyName);
+        //根据属性类型将value的类型进行类型转换，主要是Integer、Long、Boolean三种类型转换
         Object convertedValue = convertValue(metaDataSource, propertyName, value);
+        //设置DataSource的相关属性
         metaDataSource.setValue(propertyName, convertedValue);
       } else {
         throw new DataSourceException("Unknown DataSource property: " + propertyName);
       }
     }
+    //设置DataSource的driverProperties属性
     if (driverProperties.size() > 0) {
       metaDataSource.setValue("driverProperties", driverProperties);
     }
@@ -65,6 +78,13 @@ public class UnpooledDataSourceFactory implements DataSourceFactory {
     return dataSource;
   }
 
+  /**
+   * 类型转换
+   * @param metaDataSource
+   * @param propertyName
+   * @param value
+   * @return
+   */
   private Object convertValue(MetaObject metaDataSource, String propertyName, String value) {
     Object convertedValue = value;
     Class<?> targetType = metaDataSource.getSetterType(propertyName);

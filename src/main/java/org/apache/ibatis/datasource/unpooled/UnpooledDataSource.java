@@ -33,28 +33,62 @@ import javax.sql.DataSource;
 import org.apache.ibatis.io.Resources;
 
 /**
+ * 无连接池数据源
  * @author Clinton Begin
  * @author Eduardo Macarron
  */
 public class UnpooledDataSource implements DataSource {
 
+  /**
+   * 加载Driver类的类加载器
+   */
   private ClassLoader driverClassLoader;
+  /**
+   * 数据库连接驱动的相关配置
+   */
   private Properties driverProperties;
+  /**
+   * 缓存所有已注册的数据库连接驱动
+   */
   private static Map<String, Driver> registeredDrivers = new ConcurrentHashMap<>();
-
+  /**
+   * 数据库连接驱动的名称
+   */
   private String driver;
+  /**
+   * 数据库Url
+   */
   private String url;
+  /**
+   * 用户名
+   */
   private String username;
+  /**
+   * 密码
+   */
   private String password;
-
+  /**
+   * 是否自动提交
+   */
   private Boolean autoCommit;
+  /**
+   * 事务隔离级别
+   */
   private Integer defaultTransactionIsolationLevel;
+  /**
+   * 默认连接网络超时
+   */
   private Integer defaultNetworkTimeout;
 
+  /**
+   * 此静态代码块，在当前类加载时将已经在DriverManager中注册的JDBC Driver复制一份到{@link UnpooledDataSource#registeredDrivers}中。
+   */
   static {
+    //获取到能加载到的所有的JDBC的驱动
     Enumeration<Driver> drivers = DriverManager.getDrivers();
     while (drivers.hasMoreElements()) {
       Driver driver = drivers.nextElement();
+      //添加JDBC驱动
       registeredDrivers.put(driver.getClass().getName(), driver);
     }
   }
@@ -90,11 +124,20 @@ public class UnpooledDataSource implements DataSource {
     this.driverProperties = driverProperties;
   }
 
+  /**
+   * 获取连接
+   * @return
+   * @throws SQLException
+   */
   @Override
   public Connection getConnection() throws SQLException {
     return doGetConnection(username, password);
   }
-
+  /**
+   * 获取连接
+   * @return
+   * @throws SQLException
+   */
   @Override
   public Connection getConnection(String username, String password) throws SQLException {
     return doGetConnection(username, password);
@@ -204,37 +247,53 @@ public class UnpooledDataSource implements DataSource {
 
   private Connection doGetConnection(String username, String password) throws SQLException {
     Properties props = new Properties();
+    //添加驱动配置
     if (driverProperties != null) {
       props.putAll(driverProperties);
     }
+    //添加连接用户名的key和value
     if (username != null) {
       props.setProperty("user", username);
     }
+    //添加连接密码的key和value
     if (password != null) {
       props.setProperty("password", password);
     }
+    //利用封装好的配置获取连接
     return doGetConnection(props);
   }
 
   private Connection doGetConnection(Properties properties) throws SQLException {
+    //初始化数据库驱动
     initializeDriver();
+    //创建真正的数据库连接
     Connection connection = DriverManager.getConnection(url, properties);
+    //配置数据库连接的autoCommit和隔离级别
     configureConnection(connection);
     return connection;
   }
 
+  /**
+   * 初始化数据库驱动
+   * @throws SQLException
+   */
   private synchronized void initializeDriver() throws SQLException {
+    //判断驱动注册列表中是否包含我们要连接的数据库驱动，即检测驱动是否已注册
     if (!registeredDrivers.containsKey(driver)) {
       Class<?> driverType;
       try {
+        //判断是否指定了驱动类的加载器，如果指定了初始化驱动后续操作使用指定的ClassLoader，然后返回不同的驱动类型（ClassLoader不同，就算是同一个java文件，生成的class类型也是不同的。）
         if (driverClassLoader != null) {
           driverType = Class.forName(driver, true, driverClassLoader);
         } else {
+          //如果没有指定加载器，那么使用默认的驱动类型
           driverType = Resources.classForName(driver);
         }
         // DriverManager requires the driver to be loaded via the system ClassLoader.
         // http://www.kfu.com/~nsayer/Java/dyn-jdbc.html
+        //创建Driver对象
         Driver driverInstance = (Driver)driverType.getDeclaredConstructor().newInstance();
+        //注册驱动，DriverProxy是UnpooledDataSource中的内部类，是Driver的静态代理类
         DriverManager.registerDriver(new DriverProxy(driverInstance));
         registeredDrivers.put(driver, driverInstance);
       } catch (Exception e) {
@@ -243,18 +302,29 @@ public class UnpooledDataSource implements DataSource {
     }
   }
 
+  /**
+   * 完成数据库连接的一系列配置
+   * @param conn
+   * @throws SQLException
+   */
   private void configureConnection(Connection conn) throws SQLException {
+    //设置网络超时时间，这是3.5.2之后添加的属性
     if (defaultNetworkTimeout != null) {
       conn.setNetworkTimeout(Executors.newSingleThreadExecutor(), defaultNetworkTimeout);
     }
+    //设置事务是否自动提交
     if (autoCommit != null && autoCommit != conn.getAutoCommit()) {
       conn.setAutoCommit(autoCommit);
     }
+    //设置事务的隔离界别
     if (defaultTransactionIsolationLevel != null) {
       conn.setTransactionIsolation(defaultTransactionIsolationLevel);
     }
   }
 
+  /**
+   * Driver的静态代理类
+   */
   private static class DriverProxy implements Driver {
     private Driver driver;
 

@@ -27,6 +27,8 @@ import org.apache.ibatis.datasource.DataSourceException;
 import org.apache.ibatis.datasource.DataSourceFactory;
 
 /**
+ * jndi模式
+ *    依赖JNDI服务从容器中获取用户配置的DataSource
  * @author Clinton Begin
  */
 public class JndiDataSourceFactory implements DataSourceFactory {

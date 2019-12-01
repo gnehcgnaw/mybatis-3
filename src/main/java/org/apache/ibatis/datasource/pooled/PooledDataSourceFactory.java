@@ -17,7 +17,14 @@ package org.apache.ibatis.datasource.pooled;
 
 import org.apache.ibatis.datasource.unpooled.UnpooledDataSourceFactory;
 
+import java.util.Properties;
+
 /**
+ * 连接池模式
+ * 继承了{@link UnpooledDataSourceFactory},但是并没有覆盖{@link UnpooledDataSourceFactory#setProperties(Properties)}和{@link UnpooledDataSourceFactory#getDataSource()}方法，
+ * 唯一不同的是初始化的dataSource是不同的：
+ *      {@link UnpooledDataSourceFactory} 初始化了{@link org.apache.ibatis.datasource.unpooled.UnpooledDataSource}
+ *      {@link PooledDataSourceFactory} 初始化了{@link PooledDataSource}
  * @author Clinton Begin
  */
 public class PooledDataSourceFactory extends UnpooledDataSourceFactory {
