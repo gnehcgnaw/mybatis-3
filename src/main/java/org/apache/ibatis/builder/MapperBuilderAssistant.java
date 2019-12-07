@@ -50,10 +50,18 @@ import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;
 
 /**
+ *
+ * 这是XMLMapperBuilder的辅助类
+ *    每一个mapper文件资源都对应一个MapperBuilderAssistant，因为创建MapperBuilderAssistant需要两个参数：
+ *    一个是Configuration ，另一个是resource，而这个resource对应的就是Mapper.xml的路径
+ *    e.g. resources/mapper/BlogMapper.xml
  * @author Clinton Begin
  */
 public class MapperBuilderAssistant extends BaseBuilder {
 
+  /**
+   * 当前命名空间
+   */
   private String currentNamespace;
   private final String resource;
   private Cache currentCache;
@@ -103,6 +111,11 @@ public class MapperBuilderAssistant extends BaseBuilder {
     return currentNamespace + "." + base;
   }
 
+  /**
+   * 通过namespace查找对应的Cache对象
+   * @param namespace
+   * @return
+   */
   public Cache useCacheRef(String namespace) {
     if (namespace == null) {
       throw new BuilderException("cache-ref element requires a namespace attribute.");
@@ -113,7 +126,9 @@ public class MapperBuilderAssistant extends BaseBuilder {
       if (cache == null) {
         throw new IncompleteElementException("No cache for namespace '" + namespace + "' could be found.");
       }
+      //记录当前命令空间使用的Cache
       currentCache = cache;
+      //标记已成功解析
       unresolvedCacheRef = false;
       return cache;
     } catch (IllegalArgumentException e) {
@@ -121,6 +136,17 @@ public class MapperBuilderAssistant extends BaseBuilder {
     }
   }
 
+  /**
+   *
+   * @param typeClass
+   * @param evictionClass
+   * @param flushInterval
+   * @param size
+   * @param readWrite
+   * @param blocking
+   * @param props
+   * @return
+   */
   public Cache useNewCache(Class<? extends Cache> typeClass,
       Class<? extends Cache> evictionClass,
       Long flushInterval,
@@ -128,6 +154,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
       boolean readWrite,
       boolean blocking,
       Properties props) {
+    //创建Cache对象，这里使用了建造者模式，CacheBuilder是建造者的角色，而Cache是生成的产品
     Cache cache = new CacheBuilder(currentNamespace)
         .implementation(valueOrDefault(typeClass, PerpetualCache.class))
         .addDecorator(valueOrDefault(evictionClass, LruCache.class))
@@ -298,6 +325,15 @@ public class MapperBuilderAssistant extends BaseBuilder {
     return statement;
   }
 
+  /**
+   * (抽象能力好强的代码，羡慕呀)
+   * 这是我的 ：{@link red.reksai.javabase.ValueOrDefaultMethodTest}
+   * ValueOrDefault
+   * @param value 原值
+   * @param defaultValue  默认值
+   * @param <T>
+   * @return
+   */
   private <T> T valueOrDefault(T value, T defaultValue) {
     return value == null ? defaultValue : value;
   }
@@ -325,6 +361,14 @@ public class MapperBuilderAssistant extends BaseBuilder {
     return parameterMap;
   }
 
+  /**
+   *
+   * 获取语句的ResultMaps
+   * @param resultMap
+   * @param resultType
+   * @param statementId
+   * @return
+   */
   private List<ResultMap> getStatementResultMaps(
       String resultMap,
       Class<?> resultType,
@@ -353,6 +397,9 @@ public class MapperBuilderAssistant extends BaseBuilder {
     return resultMaps;
   }
 
+  /**
+   * 建立ResultMapping映射
+   */
   public ResultMapping buildResultMapping(
       Class<?> resultType,
       String property,

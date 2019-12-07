@@ -16,6 +16,13 @@
 package org.apache.ibatis.mapping;
 
 /**
+ * 结果标记：
+ *    ID标记：
+ *      id 元素表示的结果将是对象的标识属性，这会在比较对象实例时用到。 这样可以提高整体的性能，尤其是进行缓存和嵌套结果映射（也就是连接映射）的时候
+ *    构造器比较
+ *
+ *  作用：
+ *
  * @author Clinton Begin
  */
 public enum ResultFlag {

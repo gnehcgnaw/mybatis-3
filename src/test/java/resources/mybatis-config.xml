@@ -11,12 +11,15 @@
     <property name="username" value="xxx"/>
     <property name="password" value="xxx"/>
   </properties>
-  <!--2. settings 这是 MyBatis 中极为重要的调整设置，它们会改变 MyBatis 的运行时行为。 //todo -->
+  <!--2. settings 这是 MyBatis 中极为重要的调整设置，它们会改变 MyBatis 的运行时行为。-->
 
   <!--3. typeAliases 设置类型别名：
     a. 类型别名是为 Java 类型设置一个短的名字。 它只和 XML 配置有关，存在的意义仅在于用来减少类完全限定名的冗余，
-    b. mybatis 默认为我们设置了基本类型，在我们编程的时候，也可以将类似于red.reksai.UserDao   aliases == userDao 。 //todo
+    b. mybatis 默认为我们设置了基本类型，在我们编程的时候，也可以将类似于red.reksai.UserDao   aliases == userDao 。
   -->
+  <typeAliases>
+    <package name="red.reksai.resultmap.entity"/>
+  </typeAliases>
 
   <!--4. typeHandlers -->
   <typeHandlers>
@@ -48,8 +51,10 @@
 
   <!--9. mappers 映射器-->
   <mappers>
-    <mapper resource="resources/mapper/BlogMapper.xml"/>
-    <mapper resource="resources/mapper/UserMapper.xml"/>
+    <mapper resource="resources/mapper/TbAuthorMapper.xml"/>
+    <mapper resource="resources/mapper/TbBlogMapper.xml"/>
+    <mapper resource="resources/mapper/TbCommentMapper.xml"/>
+    <mapper resource="resources/mapper/TbPostMapper.xml"/>
   </mappers>
 
 </configuration>

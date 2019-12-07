@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="red.reksai.resultmap.mapper.TbCommentMapper">
+
+  <select id="selectComment" resultType="red.reksai.resultmap.entity.TbComment">
+    select
+    comment_id as commentId ,
+    comment_content as commentContent
+    from tb_comment where comment_post_id = #{id}
+  </select>
+</mapper>

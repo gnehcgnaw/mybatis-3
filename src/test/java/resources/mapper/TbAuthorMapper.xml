@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="red.reksai.resultmap.mapper.TbAuthorMapper">
+
+   <resultMap id="authorResultMap" type="TbAuthor">
+      <id property="authorId" column="author_id"/>
+      <result property="authorUsername" column="author_username"/>
+      <result property="authorPassword" column="author_password"/>
+      <result property="authorEmail" column="author_email"/>
+   </resultMap>
+
+
+    <select id="selectAuthor" resultMap="authorResultMap">
+      select author_id ,author_username , author_password ,author_email from tb_author where author_id = #{id}
+    </select>
+
+
+</mapper>

@@ -22,12 +22,17 @@ import org.apache.ibatis.cache.Cache;
 import org.apache.ibatis.cache.CacheException;
 
 /**
+ * PrepetualCache在缓存模块中扮演着ConcreteComponent的角色，
+ * 其实比较简单，底层使用HashMap记录缓存项，也是通过该HashMap对象的方法实现的Cache接口中定义的相关方法。
  * @author Clinton Begin
  */
 public class PerpetualCache implements Cache {
 
   private final String id;
 
+  /**
+   * 用于记录缓存项的map对象
+   */
   private final Map<Object, Object> cache = new HashMap<>();
 
   public PerpetualCache(String id) {
@@ -44,8 +49,12 @@ public class PerpetualCache implements Cache {
     return cache.size();
   }
 
+  //下面所有的方法都是通过cache字段记录这个HashMap对象的响应方法实现的
+
+
   @Override
   public void putObject(Object key, Object value) {
+    //向缓存中添加缓存对象
     cache.put(key, value);
   }
 
@@ -63,6 +72,8 @@ public class PerpetualCache implements Cache {
   public void clear() {
     cache.clear();
   }
+
+  //重写了equals()方法和hashCode()方法，两者都只关心id字段，并不关系cache字段
 
   @Override
   public boolean equals(Object o) {

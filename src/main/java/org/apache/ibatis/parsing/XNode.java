@@ -235,21 +235,10 @@ public class XNode {
     }
   }
 
-  /**
-   * 通过属性名称，获取字符串属性值
-   * @param name
-   * @return
-   */
   public String getStringAttribute(String name) {
     return getStringAttribute(name, null);
   }
 
-  /**
-   * 通过属性名称，获取属性值
-   * @param name
-   * @param def
-   * @return
-   */
   public String getStringAttribute(String name, String def) {
     String value = attributes.getProperty(name);
     if (value == null) {

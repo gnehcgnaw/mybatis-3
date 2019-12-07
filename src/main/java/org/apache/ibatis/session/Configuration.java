@@ -138,7 +138,10 @@ public class Configuration {
   protected ObjectWrapperFactory objectWrapperFactory = new DefaultObjectWrapperFactory();
 
   protected boolean lazyLoadingEnabled = false;
-  protected ProxyFactory proxyFactory = new JavassistProxyFactory(); // #224 Using internal Javassist instead of OGNL
+
+  // #224 Using internal Javassist instead of OGNL
+
+  protected ProxyFactory proxyFactory = new JavassistProxyFactory();
 
   protected String databaseId;
   /**
@@ -160,15 +163,25 @@ public class Configuration {
   protected final Map<String, MappedStatement> mappedStatements = new StrictMap<MappedStatement>("Mapped Statements collection")
       .conflictMessageProducer((savedValue, targetValue) ->
           ". please check " + savedValue.getResource() + " and " + targetValue.getResource());
+  /**
+   * key = Cache的ID （默认是映射文件的namespace）
+   * value = Cache对象（二级缓存）
+   */
   protected final Map<String, Cache> caches = new StrictMap<>("Caches collection");
   protected final Map<String, ResultMap> resultMaps = new StrictMap<>("Result Maps collection");
   protected final Map<String, ParameterMap> parameterMaps = new StrictMap<>("Parameter Maps collection");
   protected final Map<String, KeyGenerator> keyGenerators = new StrictMap<>("Key Generators collection");
 
+  /**
+   * 用于记录已加载的映射文件
+   */
   protected final Set<String> loadedResources = new HashSet<>();
   protected final Map<String, XNode> sqlFragments = new StrictMap<>("XML fragments parsed from previous mappers");
 
   protected final Collection<XMLStatementBuilder> incompleteStatements = new LinkedList<>();
+  /**
+   * 记录当前解析出现异常的CacheRefResolver对象
+   */
   protected final Collection<CacheRefResolver> incompleteCacheRefs = new LinkedList<>();
   protected final Collection<ResultMapResolver> incompleteResultMaps = new LinkedList<>();
   protected final Collection<MethodResolver> incompleteMethods = new LinkedList<>();
@@ -688,7 +701,9 @@ public class Configuration {
 
   public void addResultMap(ResultMap rm) {
     resultMaps.put(rm.getId(), rm);
+    //在本地检查是否有区分的嵌套结果图
     checkLocallyForDiscriminatedNestedResultMaps(rm);
+    //全局检查是否有区分的嵌套结果图
     checkGloballyForDiscriminatedNestedResultMaps(rm);
   }
 
@@ -930,6 +945,10 @@ public class Configuration {
     }
   }
 
+  /**
+   * StrictMap继承了HashMap，并在其基础上进行了少许修改
+   * @param <V>
+   */
   protected static class StrictMap<V> extends HashMap<String, V> {
 
     private static final long serialVersionUID = -4950446264854982944L;
@@ -972,27 +991,36 @@ public class Configuration {
     @Override
     @SuppressWarnings("unchecked")
     public V put(String key, V value) {
+      //如果检测到重复的key直接抛出异常
       if (containsKey(key)) {
         throw new IllegalArgumentException(name + " already contains value for " + key
             + (conflictMessageProducer == null ? "" : conflictMessageProducer.apply(super.get(key), value)));
       }
+      //如果没有重复的key则添加key以及value
+      //同时根据key产生shortKey
       if (key.contains(".")) {
+        //按照“.”将key切分成数组，然后将数组的最后一项作为shortKey
         final String shortKey = getShortName(key);
+        //如果不包含指定shortKey,则添加该键值对
         if (super.get(shortKey) == null) {
           super.put(shortKey, value);
         } else {
+          //如果该shortKey已经存在，则将value修改成Ambiguity对象
           super.put(shortKey, (V) new Ambiguity(shortKey));
         }
       }
+      //如果没有重复的key则添加key以及value（这是全面）
       return super.put(key, value);
     }
 
     @Override
     public V get(Object key) {
       V value = super.get(key);
+      //检测value是否存在
       if (value == null) {
         throw new IllegalArgumentException(name + " does not contain value for " + key);
       }
+      //如果value是Ambiguity类型，则报错
       if (value instanceof Ambiguity) {
         throw new IllegalArgumentException(((Ambiguity) value).getSubject() + " is ambiguous in " + name
             + " (try using the full name including the namespace, or rename one of the entries)");
@@ -1000,7 +1028,13 @@ public class Configuration {
       return value;
     }
 
+    /**
+     * Ambiguity 是 StrictMap的内部静态类，表示存在二义性的键值对
+     */
     protected static class Ambiguity {
+      /**
+       * subject 记录二义性的key
+       */
       final private String subject;
 
       public Ambiguity(String subject) {

@@ -16,6 +16,7 @@
 package org.apache.ibatis.builder;
 
 /**
+ * 初始化对象接口
  * Interface that indicate to provide an initialization method.
  *
  * @since 3.4.2

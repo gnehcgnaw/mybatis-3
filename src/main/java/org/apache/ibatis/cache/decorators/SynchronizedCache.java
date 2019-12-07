@@ -18,6 +18,7 @@ package org.apache.ibatis.cache.decorators;
 import org.apache.ibatis.cache.Cache;
 
 /**
+ * 在每个方法上添加synchronized关键字，为Cache添加了同步功能
  * @author Clinton Begin
  */
 public class SynchronizedCache implements Cache {

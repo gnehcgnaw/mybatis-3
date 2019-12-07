@@ -38,13 +38,37 @@ import org.apache.ibatis.reflection.SystemMetaObject;
  * @author Clinton Begin
  */
 public class CacheBuilder {
+  /**
+   * Cache对象的唯一标识，一般情况下对应映射文件中的配置 namespace
+   */
   private final String id;
+  /**
+   * Cache接口真正实现类，默认值是是前面介绍的{@link PerpetualCache}
+   */
   private Class<? extends Cache> implementation;
+  /**
+   * 装饰器集合，默认只包含{@link LruCache}
+   */
   private final List<Class<? extends Cache>> decorators;
+  /**
+   * Cache 大小
+   */
   private Integer size;
+  /**
+   * 清理时间周期
+   */
   private Long clearInterval;
+  /**
+   * 是否可读写
+   */
   private boolean readWrite;
+  /**
+   * 其他配置信息
+   */
   private Properties properties;
+  /**
+   * 是否阻塞
+   */
   private boolean blocking;
 
   public CacheBuilder(String id) {
@@ -90,19 +114,32 @@ public class CacheBuilder {
   }
 
   public Cache build() {
+    //如果implementation和decorators为null，则为其设置默认值
     setDefaultImplementations();
+    //根据{@link #implementation} 指定的类型，通过反射获取参数为String类型的构造方法
+    //   因为创建一个Cache的构造,例如： {@link PerpetualCache#PerpetualCache(String)}），
+    //   并通过该构造方法创建Cache对象 。
     Cache cache = newBaseCacheInstance(implementation, id);
+    //根据<cache>节点下配置的<property>信息，初始化Cache对象
     setCacheProperties(cache);
     // issue #352, do not apply decorators to custom caches
+    // 问题＃352，请勿将装饰器应用于自定义缓存
+    // 检测cache对象的类型，如果是PerpetualCache类型，则为其添加decorators集合中的装饰器，
     if (PerpetualCache.class.equals(cache.getClass())) {
       for (Class<? extends Cache> decorator : decorators) {
+        //通过发射获取参数为Cache类型的构造方法，并通过该构造方法创建装饰器
         cache = newCacheDecoratorInstance(decorator, cache);
+        //为装饰器添加属性
         setCacheProperties(cache);
       }
+      //添加Mybatis中提供的标准装饰器
       cache = setStandardDecorators(cache);
-    } else if (!LoggingCache.class.isAssignableFrom(cache.getClass())) {
+    }
+    //如果不是LoggingCache的子类，则添加LoggingCache装饰器
+    else if (!LoggingCache.class.isAssignableFrom(cache.getClass())) {
       cache = new LoggingCache(cache);
     }
+    //如果是自定义类型的Cache接口实现，则不添加decorators集合中的装饰器
     return cache;
   }
 
@@ -117,20 +154,29 @@ public class CacheBuilder {
 
   private Cache setStandardDecorators(Cache cache) {
     try {
+      //创建cache对象对应的MetaObject对象
       MetaObject metaCache = SystemMetaObject.forObject(cache);
       if (size != null && metaCache.hasSetter("size")) {
         metaCache.setValue("size", size);
       }
+      //检测是否指定了clearInterval字段
       if (clearInterval != null) {
+        //添加ScheduledCache装饰器
         cache = new ScheduledCache(cache);
+        //设置ScheduledCache下的clearInterval字段
         ((ScheduledCache) cache).setClearInterval(clearInterval);
       }
+      //是否只读
       if (readWrite) {
+        //添加SerializedCache装饰器
         cache = new SerializedCache(cache);
       }
+      //默认添加LoggingCache和SynchronizedCache两个装饰器
       cache = new LoggingCache(cache);
       cache = new SynchronizedCache(cache);
+      //是否阻塞
       if (blocking) {
+        //添加BlockingCache装饰器
         cache = new BlockingCache(cache);
       }
       return cache;
@@ -139,14 +185,23 @@ public class CacheBuilder {
     }
   }
 
+  /**
+   * 根据<cache>节点下配置的<property>信息，初始化Cache对象
+   * @param cache
+   */
   private void setCacheProperties(Cache cache) {
     if (properties != null) {
       MetaObject metaCache = SystemMetaObject.forObject(cache);
       for (Map.Entry<Object, Object> entry : properties.entrySet()) {
+        //配置项的名称
         String name = (String) entry.getKey();
+        //配置项的值
         String value = (String) entry.getValue();
+        //检测cache是否有该属性对应的setter方法
         if (metaCache.hasSetter(name)) {
+          //获取该属性的类型
           Class<?> type = metaCache.getSetterType(name);
+          //进行类型转换，并设置该属性值
           if (String.class == type) {
             metaCache.setValue(name, value);
           } else if (int.class == type
@@ -176,6 +231,7 @@ public class CacheBuilder {
         }
       }
     }
+    //如果Cache继承了InitializingObject接口，则调用initialize()方法继续自定义初始化操作
     if (InitializingObject.class.isAssignableFrom(cache.getClass())) {
       try {
         ((InitializingObject) cache).initialize();
@@ -186,6 +242,14 @@ public class CacheBuilder {
     }
   }
 
+  /**
+   * 根据{@link #implementation} 指定的类型，通过反射获取参数为String类型的构造方法
+   * （因为创建一个Cache的构造,例如： {@link PerpetualCache#PerpetualCache(String)}），
+   * 并通过该构造方法创建Cache对象 。
+   * @param cacheClass  {@link #implementation}
+   * @param id
+   * @return Cache
+   */
   private Cache newBaseCacheInstance(Class<? extends Cache> cacheClass, String id) {
     Constructor<? extends Cache> cacheConstructor = getBaseCacheConstructor(cacheClass);
     try {

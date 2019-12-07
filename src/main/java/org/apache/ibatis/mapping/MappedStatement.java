@@ -44,6 +44,7 @@ public final class MappedStatement {
   private SqlSource sqlSource;
   private Cache cache;
   private ParameterMap parameterMap;
+  //
   private List<ResultMap> resultMaps;
   private boolean flushCacheRequired;
   private boolean useCache;

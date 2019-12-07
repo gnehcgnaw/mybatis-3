@@ -22,15 +22,37 @@ import org.apache.ibatis.mapping.ResultMap;
 import org.apache.ibatis.mapping.ResultMapping;
 
 /**
+ * ResultMap解析器
  * @author Eduardo Macarron
  */
 public class ResultMapResolver {
+  /**
+   * MapperBuilderAssistant
+   */
   private final MapperBuilderAssistant assistant;
+  /**
+   * resultMap节点的id属性
+   */
   private final String id;
+  /**
+   * resultMap节点的type属性
+   */
   private final Class<?> type;
+  /**
+   * resultMap节点的extend属性
+   */
   private final String extend;
+  /**
+   * resultMap节点下的discriminator节点对应的对象
+   */
   private final Discriminator discriminator;
+  /**
+   * resultMap节点下的所有ResultMapping
+   */
   private final List<ResultMapping> resultMappings;
+  /**
+   * resultMap是否自动映射
+   */
   private final Boolean autoMapping;
 
   public ResultMapResolver(MapperBuilderAssistant assistant, String id, Class<?> type, String extend, Discriminator discriminator, List<ResultMapping> resultMappings, Boolean autoMapping) {
@@ -44,6 +66,7 @@ public class ResultMapResolver {
   }
 
   public ResultMap resolve() {
+    //委托MapperBuilderAssistant添加resultMap到Configuration
     return assistant.addResultMap(this.id, this.type, this.extend, this.discriminator, this.resultMappings, this.autoMapping);
   }
 

@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="red.reksai.resultmap.mapper.TbBlogMapper">
+
+  <select id="selectBlogDetails1" resultType="java.util.Map">
+    select
+        tb.blog_id as blog_id ,
+        tb.blog_title as blog_title ,
+        tb.blog_author_id as blog_author_id,
+        ta.author_id as author_id ,
+        ta.author_username as author_username ,
+        ta.author_password as author_password ,
+        ta.author_email as author_email ,
+        tp.post_id as post_id,
+        tp.post_blog_id as post_blog_id,
+        tp.post_content as post_content ,
+        tp.post_draft as post_draft
+    from
+        tb_blog tb
+          left outer join
+          tb_author ta
+          on
+          tb.blog_author_id = ta.author_id
+          left outer join
+          tb_post tp
+          on
+        tb.blog_id = tp.post_blog_id
+    where
+        tb.blog_id = #{id}
+  </select>
+
+
+  <resultMap id="selectBlogDetailsResultMap2" type="red.reksai.resultmap.entity.TbBlog">
+    <id property="blogId" column="blog_id" />
+    <result property="blogTitle" column="blog_title"/>
+    <!--关联的嵌套结果映射resultMap="red.reksai.resultmap.mapper.TbAuthorMapper.authorResultMap"-->
+    <association property="tbAuthor"  />
+    <collection property="tbPosts" ofType="red.reksai.resultmap.entity.TbPost" resultMap="red.reksai.resultmap.mapper.TbPostMapper.postResultMap" column="post_blog_id" select="red.reksai.resultmap.mapper.TbPostMapper.selectPost">
+        <collection property="tbComments" ofType="red.reksai.resultmap.entity.TbComment"/>
+    </collection>
+  </resultMap>
+  <select id="selectBlogDetails2" resultMap="selectBlogDetailsResultMap2">
+    select
+      tb.blog_id as blog_id ,
+      tb.blog_title as blog_title ,
+      tb.blog_author_id as blog_author_id,
+      ta.author_id as author_id ,
+      ta.author_username as author_username ,
+      ta.author_password as author_password ,
+      ta.author_email as author_email ,
+      tp.post_id as post_id,
+      tp.post_blog_id as post_blog_id,
+      tp.post_content as post_content ,
+      tp.post_draft as post_draft
+    from
+      tb_blog tb
+      left outer join
+      tb_author ta
+      on
+      tb.blog_author_id = ta.author_id
+      left outer join
+      tb_post tp
+      on
+      tb.blog_id = tp.post_blog_id
+    where
+        tb.blog_id = #{id}
+  </select>
+
+  <resultMap id="selectBlogDetailsResultMap3" type="red.reksai.resultmap.entity.TbBlog">
+    <id property="blogId" column="blog_id"/>
+    <result property="blogTitle" column="blog_title"/>
+    <association property="tbAuthor" javaType="red.reksai.resultmap.entity.TbAuthor" column="blog_author_id" select="red.reksai.resultmap.mapper.TbAuthorMapper.selectAuthor"/>
+    <collection property="tbPosts" ofType="red.reksai.resultmap.entity.TbPost" resultMap="red.reksai.resultmap.mapper.TbPostMapper.postResultMap"/>
+  </resultMap>
+  <select id="selectBlogDetails3" resultMap="selectBlogDetailsResultMap3">
+    select
+      tb.blog_id as blog_id ,
+      tb.blog_title as blog_title ,
+      tb.blog_author_id as blog_author_id,
+      tp.post_id as post_id,
+      tp.post_blog_id as post_blog_id,
+      tp.post_content as post_content ,
+      tp.post_draft as post_draft
+    from
+      tb_blog tb
+      left outer join
+      tb_author ta
+      on
+      tb.blog_author_id = ta.author_id
+      left outer join
+      tb_post tp
+      on
+      tb.blog_id = tp.post_blog_id
+    where
+        tb.blog_id = #{id}
+  </select>
+
+</mapper>

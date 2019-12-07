@@ -32,27 +32,70 @@ import org.apache.ibatis.reflection.ParamNameUtil;
 import org.apache.ibatis.session.Configuration;
 
 /**
+ * 每个<resultMap>节点都会被解析成一个{@link ResultMap}对象，而每个节点所定义的映射关系，则使用{@link ResultMapping}对象表示。
  * @author Clinton Begin
  */
 public class ResultMap {
+  /**
+   * Configuration对象
+   */
   private Configuration configuration;
-
+  /**
+   * <resultMap>的id属性
+   */
   private String id;
+  /**
+   * <resultMap>的type属性
+   */
   private Class<?> type;
+  /**
+   * 记录了除<discriminator>节点之外的其他映射关系（即：ResultMapping对象集合）
+   */
   private List<ResultMapping> resultMappings;
+  /**
+   * 记录了映射关系中带ID标志的映射关系，例如:<id>节点和<constructor>节点的<idArg>节点
+   */
   private List<ResultMapping> idResultMappings;
+  /**
+   * 记录映射关系中带constructor标志的映射关系，例如:<constructor>所有子元素
+   */
   private List<ResultMapping> constructorResultMappings;
+  /**
+   * 记录映射关系中不带constructor标志的映射关系
+   */
   private List<ResultMapping> propertyResultMappings;
+  /**
+   * 记录映射关系中所有的column属性
+   */
   private Set<String> mappedColumns;
+  /**
+   * 记录映射关系中所有的property属性
+   */
   private Set<String> mappedProperties;
+  /**
+   * 鉴别器，对应<discriminator>节点
+   */
   private Discriminator discriminator;
+  /**
+   * 是否有嵌套的结果集映射，如果某个映射关系中存在resultMap属性，且不存在resultSet属性，则为true
+   */
   private boolean hasNestedResultMaps;
+  /**
+   * 是否含有嵌套查询，如果某个属性映射存在select属性，则为true
+   */
   private boolean hasNestedQueries;
+  /**
+   * 是否开启自动映射
+   */
   private Boolean autoMapping;
 
   private ResultMap() {
   }
 
+  /**
+   * 建造者模式
+   * 用于创建ResultMap对象
+   */
   public static class Builder {
     private static final Log log = LogFactory.getLog(Builder.class);
 
@@ -137,6 +180,7 @@ public class ResultMap {
         });
       }
       // lock down collections
+      // 锁定集合，设置为不可修改
       resultMap.resultMappings = Collections.unmodifiableList(resultMap.resultMappings);
       resultMap.idResultMappings = Collections.unmodifiableList(resultMap.idResultMappings);
       resultMap.constructorResultMappings = Collections.unmodifiableList(resultMap.constructorResultMappings);

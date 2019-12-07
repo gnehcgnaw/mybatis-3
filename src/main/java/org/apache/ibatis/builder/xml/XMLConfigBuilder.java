@@ -47,7 +47,7 @@ import org.apache.ibatis.transaction.TransactionFactory;
 import org.apache.ibatis.type.JdbcType;
 
 /**
- * 是对mybatis的配置文件进行解析的类。
+ * 负责解析mybayis-config.xml配置文件
  * @author Clinton Begin
  * @author Kazuki Shimizu
  */
@@ -475,6 +475,7 @@ public class XMLConfigBuilder extends BaseBuilder {
             InputStream inputStream = Resources.getUrlAsStream(url);
             //创建XMLMapperBuilder对象，解析映射配置文件
             XMLMapperBuilder mapperParser = new XMLMapperBuilder(inputStream, configuration, url, configuration.getSqlFragments());
+            //解析映射文件
             mapperParser.parse();
           } else if (resource == null && url == null && mapperClass != null) {
             Class<?> mapperInterface = Resources.classForName(mapperClass);

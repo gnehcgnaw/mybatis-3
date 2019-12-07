@@ -40,8 +40,17 @@ public class TransactionalCache implements Cache {
   private static final Log log = LogFactory.getLog(TransactionalCache.class);
 
   private final Cache delegate;
+  /**
+   * 提交时是否清除
+   */
   private boolean clearOnCommit;
+  /**
+   * 提交时添加的条目
+   */
   private final Map<Object, Object> entriesToAddOnCommit;
+  /**
+   * 缓存中缺少的条目
+   */
   private final Set<Object> entriesMissedInCache;
 
   public TransactionalCache(Cache delegate) {
