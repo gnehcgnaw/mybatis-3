@@ -16,11 +16,13 @@
 package org.apache.ibatis.binding;
 
 import java.io.Serializable;
+import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 
@@ -33,16 +35,16 @@ import org.apache.ibatis.session.SqlSession;
  */
 public class MapperProxy<T> implements InvocationHandler, Serializable {
 
-  private static final long serialVersionUID = -6424540398559729838L;
+  private static final long serialVersionUID = -4724728412955527868L;
   private static final int ALLOWED_MODES = MethodHandles.Lookup.PRIVATE | MethodHandles.Lookup.PROTECTED
       | MethodHandles.Lookup.PACKAGE | MethodHandles.Lookup.PUBLIC;
   private static final Constructor<Lookup> lookupConstructor;
   private static final Method privateLookupInMethod;
   private final SqlSession sqlSession;
   private final Class<T> mapperInterface;
-  private final Map<Method, MapperMethod> methodCache;
+  private final Map<Method, MapperMethodInvoker> methodCache;
 
-  public MapperProxy(SqlSession sqlSession, Class<T> mapperInterface, Map<Method, MapperMethod> methodCache) {
+  public MapperProxy(SqlSession sqlSession, Class<T> mapperInterface, Map<Method, MapperMethodInvoker> methodCache) {
     this.sqlSession = sqlSession;
     this.mapperInterface = mapperInterface;
     this.methodCache = methodCache;
@@ -67,76 +69,93 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
         throw new IllegalStateException(
             "There is neither 'privateLookupIn(Class, Lookup)' nor 'Lookup(Class, int)' method in java.lang.invoke.MethodHandles.",
             e);
-      } catch (Throwable t) {
+      } catch (Exception e) {
         lookup = null;
       }
     }
     lookupConstructor = lookup;
   }
 
-  /**
-   * MapperProxy#invoke
-   * @param proxy 代理对象
-   * @param method  需要执行的方法
-   * @param args  参数列表
-   * @return
-   * @throws Throwable
-   */
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     try {
-      /**
-       * 这里执行这个判断的意义是什么？
-       *    假如我们需要执行的方法是Object中的方法，并且我们没有覆盖重写，那么就直接调用就行。
-       */
       if (Object.class.equals(method.getDeclaringClass())) {
         return method.invoke(this, args);
-      }
-      /**
-       * Java8之后有了default方法
-       */
-      else if (method.isDefault()) {
-        if (privateLookupInMethod == null) {
-          return invokeDefaultMethodJava8(proxy, method, args);
-        } else {
-          return invokeDefaultMethodJava9(proxy, method, args);
-        }
+      } else {
+        return cachedInvoker(proxy, method, args).invoke(proxy, method, args, sqlSession);
       }
     } catch (Throwable t) {
       throw ExceptionUtil.unwrapThrowable(t);
     }
-    /**
-     * 映射器方法
-     * 缓存当前方法，这个其实就是mybatis的一级缓存
-     * //todo 一级缓存的时候再去分析
-     */
-    final MapperMethod mapperMethod = cachedMapperMethod(method);
-    return mapperMethod.execute(sqlSession, args);
   }
 
-  /**
-   * 缓存当前方法，并且返回
-   * @param method
-   * @return
-   */
-  private MapperMethod cachedMapperMethod(Method method) {
-    return methodCache.computeIfAbsent(method,
-        k -> new MapperMethod(mapperInterface, method, sqlSession.getConfiguration()));
+  private MapperMethodInvoker cachedInvoker(Object proxy, Method method, Object[] args) throws Throwable {
+    try {
+      return methodCache.computeIfAbsent(method, m -> {
+        if (m.isDefault()) {
+          try {
+            if (privateLookupInMethod == null) {
+              return new DefaultMethodInvoker(getMethodHandleJava8(method));
+            } else {
+              return new DefaultMethodInvoker(getMethodHandleJava9(method));
+            }
+          } catch (IllegalAccessException | InstantiationException | InvocationTargetException
+              | NoSuchMethodException e) {
+            throw new RuntimeException(e);
+          }
+        } else {
+          return new PlainMethodInvoker(new MapperMethod(mapperInterface, method, sqlSession.getConfiguration()));
+        }
+      });
+    } catch (RuntimeException re) {
+      Throwable cause = re.getCause();
+      throw cause == null ? re : cause;
+    }
   }
 
-  private Object invokeDefaultMethodJava9(Object proxy, Method method, Object[] args)
-      throws Throwable {
+  private MethodHandle getMethodHandleJava9(Method method)
+      throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
     final Class<?> declaringClass = method.getDeclaringClass();
-    return ((Lookup) privateLookupInMethod.invoke(null, declaringClass, MethodHandles.lookup()))
-        .findSpecial(declaringClass, method.getName(),
-            MethodType.methodType(method.getReturnType(), method.getParameterTypes()), declaringClass)
-        .bindTo(proxy).invokeWithArguments(args);
+    return ((Lookup) privateLookupInMethod.invoke(null, declaringClass, MethodHandles.lookup())).findSpecial(
+        declaringClass, method.getName(), MethodType.methodType(method.getReturnType(), method.getParameterTypes()),
+        declaringClass);
   }
 
-  private Object invokeDefaultMethodJava8(Object proxy, Method method, Object[] args)
-      throws Throwable {
+  private MethodHandle getMethodHandleJava8(Method method)
+      throws IllegalAccessException, InstantiationException, InvocationTargetException {
     final Class<?> declaringClass = method.getDeclaringClass();
-    return lookupConstructor.newInstance(declaringClass, ALLOWED_MODES).unreflectSpecial(method, declaringClass)
-        .bindTo(proxy).invokeWithArguments(args);
+    return lookupConstructor.newInstance(declaringClass, ALLOWED_MODES).unreflectSpecial(method, declaringClass);
+  }
+
+  interface MapperMethodInvoker {
+    Object invoke(Object proxy, Method method, Object[] args, SqlSession sqlSession) throws Throwable;
+  }
+
+  private static class PlainMethodInvoker implements MapperMethodInvoker {
+    private final MapperMethod mapperMethod;
+
+    public PlainMethodInvoker(MapperMethod mapperMethod) {
+      super();
+      this.mapperMethod = mapperMethod;
+    }
+
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args, SqlSession sqlSession) throws Throwable {
+      return mapperMethod.execute(sqlSession, args);
+    }
+  }
+
+  private static class DefaultMethodInvoker implements MapperMethodInvoker {
+    private final MethodHandle methodHandle;
+
+    public DefaultMethodInvoker(MethodHandle methodHandle) {
+      super();
+      this.methodHandle = methodHandle;
+    }
+
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args, SqlSession sqlSession) throws Throwable {
+      return methodHandle.bindTo(proxy).invokeWithArguments(args);
+    }
   }
 }

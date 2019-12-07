@@ -140,8 +140,8 @@
     <osgi.dynamicImport>*</osgi.dynamicImport>
     <spotbugs.onlyAnalyze>org.apache.ibatis.*</spotbugs.onlyAnalyze>
 
-    <!-- Remove after parent 32 (support for jdk 13) -->
-    <jacoco.version>0.8.4</jacoco.version>
+    <!-- Remove after parent 32 (support for jdk 13 and 14) -->
+    <jacoco.version>0.8.5</jacoco.version>
   </properties>
 
   <dependencies>
@@ -228,13 +228,13 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>3.1.0</version>
+      <version>3.2.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-junit-jupiter</artifactId>
-      <version>3.1.0</version>
+      <version>3.2.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -271,19 +271,19 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>1.12.3</version>
+      <version>1.12.4</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>postgresql</artifactId>
-      <version>1.12.3</version>
+      <version>1.12.4</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>mysql</artifactId>
-      <version>1.12.3</version>
+      <version>1.12.4</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
