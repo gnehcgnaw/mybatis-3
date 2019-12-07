@@ -59,6 +59,13 @@ public class XMLMapperBuilder extends BaseBuilder {
 
   private final XPathParser parser;
   private final MapperBuilderAssistant builderAssistant;
+  /**
+   * 将被解析的SQL片段
+   *      ：因为根据SQL片段有很多，只有进行了databaseId匹配的才是会被解析的，没有被匹配就没必要加载解析
+   * @see Configuration#databaseId
+   * @see XMLMapperBuilder#databaseIdMatchesCurrent(String, String, String)  ：
+   *            Configuration#databaseId与 <sql datbabaseId>的比较
+   */
   private final Map<String, XNode> sqlFragments;
   private final String resource;
 
@@ -132,7 +139,7 @@ public class XMLMapperBuilder extends BaseBuilder {
       parameterMapElement(context.evalNodes("/mapper/parameterMap"));
       //解析<resultMap>节点
       resultMapElements(context.evalNodes("/mapper/resultMap"));
-      //解析<sql>节点
+      //解析<sql>节点（其实就是将符合条件的节点放入Configuration.sqlFragments中）
       sqlElement(context.evalNodes("/mapper/sql"));
       //解析<select>、<insert>、<update>、<delete>节点
       buildStatementFromContext(context.evalNodes("select|insert|update|delete"));
@@ -142,6 +149,7 @@ public class XMLMapperBuilder extends BaseBuilder {
   }
 
   private void buildStatementFromContext(List<XNode> list) {
+    //解析<select>、<insert>、<update>、<delete>节点，也需要知道哪些是需要解析的，根据的就是databaseId
     if (configuration.getDatabaseId() != null) {
       buildStatementFromContext(list, configuration.getDatabaseId());
     }
@@ -279,7 +287,7 @@ public class XMLMapperBuilder extends BaseBuilder {
     //list是<resultMap>节点的结合，有几对个<resultMap></resultMap> ，list的size()就等于几。
     for (XNode resultMapNode : list) {
       try {
-        /**
+        /*
          * 进行遍历,一对一对解析，一个resultMap存入{@link Configuration#resultMaps}是两个,因为这里的resultMaps是{@link Configuration.StrictMap}类型的，
          * 这个类中的{@link Configuration.StrictMap#put(String, Object)}方法会put两次，一个是简单的key，一次是全路径key。
          * 例如： <resultMap id="authorResultMap" type="TbAuthor">
@@ -313,24 +321,26 @@ public class XMLMapperBuilder extends BaseBuilder {
    */
   private ResultMap resultMapElement(XNode resultMapNode, List<ResultMapping> additionalResultMappings, Class<?> enclosingType) throws Exception {
     ErrorContext.instance().activity("processing " + resultMapNode.getValueBasedIdentifier());
-    /**
+    /*
      * 看到代码的第一印象：
      *    获取<resultMap type >中type string
      *    我不知道为什么这么写 ,因为resultMap的属性只有： id ,type ,autoMapping , id , extends 而没有ofType ,resultType , javaType ,并且此时是获取type的属性的值。
      *  ----------------------   这留下了我的一个疑问？希望在跟后续步骤的时候可以解决掉。
      *
-     *
+     *  跟踪后续代码，疑问被解决了：参看{@link  XMLMapperBuilder#processNestedResultMappings(XNode, List, Class)}
      */
     String type = resultMapNode.getStringAttribute("type",
         resultMapNode.getStringAttribute("ofType",
             resultMapNode.getStringAttribute("resultType",
                 resultMapNode.getStringAttribute("javaType"))));
-    /**
+    /*
      * 因为以上代码的第一印象，以及 mybatis-3-mappper.dtd中 resultMap的type CDATA #REQUIRED ，那也就表明 resolveClass(type)只有两种结果：
      *    1. 正常返回一个typeClass ,例如 tbAuthor ----> {@link red.reksai.resultmap.entity.TbAuthor};
      *    2. 直接保存，出现一个resolveClass中的一个{@link org.apache.ibatis.binding.BindingException} , Error resolving class. Cause: e
      *  所以接下来的一步if(typeClass=null)，就显得没有必要了，
      *  --------------------    这留下了我第二个疑问，希望在跟后续步骤的时候可以解决掉。
+     *
+     *  跟踪后续代码，疑问被解决了：参看{@link  XMLMapperBuilder#processNestedResultMappings(XNode, List, Class)}
      */
     //获取resultMap映射的Class类型
     Class<?> typeClass = resolveClass(type);
@@ -441,6 +451,8 @@ public class XMLMapperBuilder extends BaseBuilder {
   }
 
   private void sqlElement(List<XNode> list) {
+    //判断Configuration中是否定义了databaseId，
+    // 目的是： 根据databaseId选择不同的sql片段
     if (configuration.getDatabaseId() != null) {
       sqlElement(list, configuration.getDatabaseId());
     }
@@ -448,11 +460,17 @@ public class XMLMapperBuilder extends BaseBuilder {
   }
 
   private void sqlElement(List<XNode> list, String requiredDatabaseId) {
+
     for (XNode context : list) {
+      //解析<sql>节点
+      //获取<sql>节点的databaseId属性的值
       String databaseId = context.getStringAttribute("databaseId");
+      //获取<sql>节点的id属性的值
       String id = context.getStringAttribute("id");
       id = builderAssistant.applyCurrentNamespace(id, false);
+      //进行数据库ID匹配
       if (databaseIdMatchesCurrent(id, databaseId, requiredDatabaseId)) {
+        //将匹配的sql片段，放入Configuration.sqlFragments集合中
         sqlFragments.put(id, context);
       }
     }
@@ -537,7 +555,9 @@ public class XMLMapperBuilder extends BaseBuilder {
   }
   /**
    *   处理嵌套的resultMappings
-   *      这个方法会调用 {@link XMLMapperBuilder#resultMapElement(XNode, List, Class)} 处理嵌套的resultMapping
+   *      这个方法会调用 {@link XMLMapperBuilder#resultMapElement(XNode, List, Class)} 处理嵌套的resultMapping，
+   *
+   *  这里也就解决了 {@link XMLMapperBuilder#resultMapElement(XNode, List, Class)}中的两个疑问了。
    *
    *  例如：
    *    <collection property="tbPosts" ofType="red.reksai.resultmap.entity.TbPost" resultMap="red.reksai.resultmap.mapper.TbPostMapper.postResultMap"/>
