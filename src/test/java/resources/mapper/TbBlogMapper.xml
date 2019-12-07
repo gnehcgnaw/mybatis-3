@@ -37,7 +37,7 @@
     <result property="blogTitle" column="blog_title"/>
     <!--关联的嵌套结果映射resultMap="red.reksai.resultmap.mapper.TbAuthorMapper.authorResultMap"-->
     <association property="tbAuthor"  />
-    <collection property="tbPosts" ofType="red.reksai.resultmap.entity.TbPost" resultMap="red.reksai.resultmap.mapper.TbPostMapper.postResultMap" column="post_blog_id" select="red.reksai.resultmap.mapper.TbPostMapper.selectPost">
+    <collection property="tbPosts" ofType="red.reksai.resultmap.entity.TbPost" resultMap="red.reksai.resultmap.mapper.TbPostMapper.postResultMap" column="post_blog_id" >
         <collection property="tbComments" ofType="red.reksai.resultmap.entity.TbComment"/>
     </collection>
   </resultMap>
