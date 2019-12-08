@@ -45,7 +45,7 @@ import org.apache.ibatis.session.SqlSession;
  * @author Kazuki Shimizu
  */
 public class MapperMethod {
-  //sql命令
+
   private final SqlCommand command;
   private final MethodSignature method;
 

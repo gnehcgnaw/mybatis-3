@@ -29,33 +29,45 @@ import org.apache.ibatis.scripting.LanguageDriver;
 import org.apache.ibatis.session.Configuration;
 
 /**
- * 映射语句
+ * Mybatis使用MappedStatement表示映射配置文件中定义的SQL节点
  * @author Clinton Begin
  */
 public final class MappedStatement {
 
   private String resource;
   private Configuration configuration;
+  /**
+   * 节点中的ID属性（包含命名空间前缀）
+   */
   private String id;
   private Integer fetchSize;
   private Integer timeout;
   private StatementType statementType;
   private ResultSetType resultSetType;
+  /**
+   * SqlSource对象，对应一天SQL语句
+   */
   private SqlSource sqlSource;
   private Cache cache;
   private ParameterMap parameterMap;
-  //
   private List<ResultMap> resultMaps;
   private boolean flushCacheRequired;
   private boolean useCache;
+  /**
+   * 这个设置仅针对嵌套结果 select 语句适用：
+   *  如果为 true，就是假设包含了嵌套结果集或是分组，这样的话当返回一个主结果行的时候，就不会发生有对前面结果集的引用的情况。
+   *  这就使得在获取嵌套的结果集的时候不至于导致内存不够用。默认值：false。
+   */
   private boolean resultOrdered;
+  /**
+   * SQL的类型， UNKNOWN, INSERT, UPDATE, DELETE, SELECT, FLUSH
+   */
   private SqlCommandType sqlCommandType;
   private KeyGenerator keyGenerator;
   private String[] keyProperties;
   private String[] keyColumns;
   private boolean hasNestedResultMaps;
   private String databaseId;
-  //语句日志
   private Log statementLog;
   private LanguageDriver lang;
   private String[] resultSets;

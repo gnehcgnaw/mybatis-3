@@ -151,7 +151,9 @@ public class Configuration {
    * @see <a href='https://code.google.com/p/mybatis/issues/detail?id=300'>Issue 300 (google code)</a>
    */
   protected Class<?> configurationFactory;
-
+  /**
+   * 记录当前使用的MapperRegistry
+   */
   protected final MapperRegistry mapperRegistry = new MapperRegistry(this);
   protected final InterceptorChain interceptorChain = new InterceptorChain();
   protected final TypeHandlerRegistry typeHandlerRegistry = new TypeHandlerRegistry(this);
@@ -168,22 +170,39 @@ public class Configuration {
    * value = Cache对象（二级缓存）
    */
   protected final Map<String, Cache> caches = new StrictMap<>("Caches collection");
+  /**
+   * 用于存储ResultMap
+   */
   protected final Map<String, ResultMap> resultMaps = new StrictMap<>("Result Maps collection");
   protected final Map<String, ParameterMap> parameterMaps = new StrictMap<>("Parameter Maps collection");
+  /**
+   * 用于存储KeyGenerator
+   */
   protected final Map<String, KeyGenerator> keyGenerators = new StrictMap<>("Key Generators collection");
 
   /**
    * 用于记录已加载的映射文件
    */
   protected final Set<String> loadedResources = new HashSet<>();
+  /**
+   * 用于存储sql片段
+   */
   protected final Map<String, XNode> sqlFragments = new StrictMap<>("XML fragments parsed from previous mappers");
-
+  /**
+   * 用于存储不完整的语句
+   */
   protected final Collection<XMLStatementBuilder> incompleteStatements = new LinkedList<>();
   /**
    * 记录当前解析出现异常的CacheRefResolver对象
    */
   protected final Collection<CacheRefResolver> incompleteCacheRefs = new LinkedList<>();
+  /**
+   * 记录当前解析出现异常的ResultMapResolver对象
+   */
   protected final Collection<ResultMapResolver> incompleteResultMaps = new LinkedList<>();
+  /**
+   * 记录当前解析出现异常的MethodResolver对象
+   */
   protected final Collection<MethodResolver> incompleteMethods = new LinkedList<>();
 
   /*
@@ -228,6 +247,7 @@ public class Configuration {
     typeAliasRegistry.registerAlias("CGLIB", CglibProxyFactory.class);
     typeAliasRegistry.registerAlias("JAVASSIST", JavassistProxyFactory.class);
 
+    //设置了默认的语言驱动程序为XMLLanguageDriver
     languageRegistry.setDefaultDriverClass(XMLLanguageDriver.class);
     languageRegistry.register(RawLanguageDriver.class);
   }

@@ -97,4 +97,21 @@
         tb.blog_id = #{id}
   </select>
 
+  <sql id="whereSqlElement">
+    where blog_id = ${idValue}
+  </sql>
+  <sql id="fromSqlElement">
+    from ${tablename}
+    <include refid="whereSqlElement">
+      <property name="idValue" value="1"/>
+    </include>
+  </sql>
+
+  <select id="selectBlogList" resultType="map">
+    select *
+    <include refid="fromSqlElement">
+      <property name="tablename" value="tb_blog"/>
+    </include>
+  </select>
+
 </mapper>

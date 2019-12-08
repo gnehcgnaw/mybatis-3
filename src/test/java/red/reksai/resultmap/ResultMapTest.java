@@ -6,6 +6,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import red.reksai.resultmap.entity.TbAuthor;
 import red.reksai.resultmap.entity.TbBlog;
 import red.reksai.resultmap.entity.TbComment;
 import red.reksai.resultmap.mapper.TbAuthorMapper;
@@ -62,5 +63,20 @@ public class ResultMapTest {
   public void testSelectBlogDetails3(){
     List<TbBlog> tbBlogs = tbBlogMapper.selectBlogDetails3(1);
     System.out.println(JSON.toJSONString(tbBlogs));
+  }
+
+  @Test
+  public void testSelectBlogList(){
+    System.out.println(tbBlogMapper.selectBlogList());
+  }
+
+
+  @Test
+  public void testInsertAuthor(){
+    TbAuthor tbAuthor = new TbAuthor();
+    tbAuthor.setAuthorUsername("lisi");
+    tbAuthor.setAuthorPassword("123456");
+    tbAuthor.setAuthorEmail("lisi@gmail.com");
+    System.out.println(tbAuthorMapper.insertAuthor(tbAuthor));
   }
 }

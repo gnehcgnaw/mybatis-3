@@ -14,6 +14,7 @@ import java.util.Map;
  */
 public interface TbAuthorMapper {
 
-  List<TbAuthor> selectAuthor(@Param("id") int id);
+    List<TbAuthor> selectAuthor(@Param("id") int id);
 
+    int insertAuthor(@Param("tbAuthor") TbAuthor tbAuthor);
 }

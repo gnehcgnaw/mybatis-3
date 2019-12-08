@@ -16,5 +16,15 @@
       select author_id ,author_username , author_password ,author_email from tb_author where author_id = #{id}
     </select>
 
+  <insert id="insertAuthor" parameterType="TbAuthor">
+    <selectKey keyColumn="author_id" order="BEFORE" keyProperty="author_id" resultType="int">
+      SELECT FLOOR(RAND() * 10000) as author_id
+    </selectKey>
+    insert into
+        tb_author
+            (author_id, author_username, author_password, author_email)
+    VALUES
+            (#{author_id},#{tbAuthor.authorUsername},#{tbAuthor.authorPassword},#{tbAuthor.authorEmail})
+  </insert>
 
 </mapper>

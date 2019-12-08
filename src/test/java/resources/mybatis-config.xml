@@ -55,6 +55,7 @@
     <mapper resource="resources/mapper/TbBlogMapper.xml"/>
     <mapper resource="resources/mapper/TbCommentMapper.xml"/>
     <mapper resource="resources/mapper/TbPostMapper.xml"/>
+    <package name="red.reksai.bingding.mapper"/>
   </mappers>
 
 </configuration>

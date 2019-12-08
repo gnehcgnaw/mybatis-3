@@ -141,7 +141,7 @@ public class XMLMapperBuilder extends BaseBuilder {
       resultMapElements(context.evalNodes("/mapper/resultMap"));
       //解析<sql>节点（其实就是将符合条件的节点放入Configuration.sqlFragments中）
       sqlElement(context.evalNodes("/mapper/sql"));
-      //解析<select>、<insert>、<update>、<delete>节点
+      //解析<select>、<insert>、<update>、<delete>节点，从上下文构建语句
       buildStatementFromContext(context.evalNodes("select|insert|update|delete"));
     } catch (Exception e) {
       throw new BuilderException("Error parsing Mapper XML. The XML location is '" + resource + "'. Cause: " + e, e);
@@ -158,8 +158,10 @@ public class XMLMapperBuilder extends BaseBuilder {
 
   private void buildStatementFromContext(List<XNode> list, String requiredDatabaseId) {
     for (XNode context : list) {
+      //创建一个XMLStatementBuilder对象
       final XMLStatementBuilder statementParser = new XMLStatementBuilder(configuration, builderAssistant, context, requiredDatabaseId);
       try {
+        //解析<select>、<insert>、<update>、<delete>节点
         statementParser.parseStatementNode();
       } catch (IncompleteElementException e) {
         configuration.addIncompleteStatement(statementParser);
@@ -599,20 +601,25 @@ public class XMLMapperBuilder extends BaseBuilder {
   }
 
   private void bindMapperForNamespace() {
+    //获取命名空间
     String namespace = builderAssistant.getCurrentNamespace();
     if (namespace != null) {
       Class<?> boundType = null;
       try {
+        //解析命名空间对应的类型
         boundType = Resources.classForName(namespace);
       } catch (ClassNotFoundException e) {
         //ignore, bound type is not required
       }
       if (boundType != null) {
+        //是否已经加载了boundType
         if (!configuration.hasMapper(boundType)) {
           // Spring may not know the real resource name so we set a flag
           // to prevent loading again this resource from the mapper interface
           // look at MapperAnnotationBuilder#loadXmlResource
+          //追加namespace前缀，并添加到Configuration.loadedResources集合中保存
           configuration.addLoadedResource("namespace:" + namespace);
+          //调用MapperRegistry.addMapper()方法，注册boundType接口
           configuration.addMapper(boundType);
         }
       }

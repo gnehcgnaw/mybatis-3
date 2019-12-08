@@ -16,13 +16,22 @@
 package org.apache.ibatis.mapping;
 
 /**
+ * Mybatis使用SqlSource接口表示映射文件或注解中定义的SQL语句，但它表示的SQL语句是不能直接被数据库执行的，
+ * 因为其中可能包含动态SQL语句相关的节点或是占位符等需要解析的元素。
+ *
+ * @see org.apache.ibatis.scripting.xmltags.DynamicSqlSource
+ * @see org.apache.ibatis.scripting.defaults.RawSqlSource
  * Represents the content of a mapped statement read from an XML file or an annotation.
  * It creates the SQL that will be passed to the database out of the input parameter received from the user.
  *
  * @author Clinton Begin
  */
 public interface SqlSource {
-
+  /**
+   * 根据映射文件或注解描述的SQL语句，以及传入的参数，返回可执行的SQL
+   * @param parameterObject
+   * @return
+   */
   BoundSql getBoundSql(Object parameterObject);
 
 }

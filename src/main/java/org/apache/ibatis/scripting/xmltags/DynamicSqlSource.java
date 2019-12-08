@@ -21,6 +21,8 @@ import org.apache.ibatis.mapping.SqlSource;
 import org.apache.ibatis.session.Configuration;
 
 /**
+ * 动态SQL语句
+ * @see org.apache.ibatis.scripting.defaults.RawSqlSource
  * @author Clinton Begin
  */
 public class DynamicSqlSource implements SqlSource {

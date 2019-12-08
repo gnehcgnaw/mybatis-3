@@ -13,9 +13,11 @@ import java.util.Map;
  * @since : 2019/12/3 15:56
  */
 public interface TbBlogMapper {
-  List<Map> selectBlogDetails1(@Param("id") int id);
+    List<Map> selectBlogDetails1(@Param("id") int id);
 
-  List<TbBlog> selectBlogDetails2(@Param("id") int id);
+    List<TbBlog> selectBlogDetails2(@Param("id") int id);
 
-  List<TbBlog> selectBlogDetails3(@Param("id") int id);
+    List<TbBlog> selectBlogDetails3(@Param("id") int id);
+
+    List<Map> selectBlogList();
 }

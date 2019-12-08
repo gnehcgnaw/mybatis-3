@@ -45,8 +45,16 @@ public class XMLIncludeTransformer {
 
   public void applyIncludes(Node source) {
     Properties variablesContext = new Properties();
+    //获取mybatis-config.xml中，<properties>节点中定义的变量集合
     Properties configurationVariables = configuration.getVariables();
+    /*
+     *  下面的一行代码其实就是说，如果configurationVariables不为null，那么就把值赋给variablesContext。
+     *  if(configurationVariables!=null){
+     *      variablesContext.putAll(configurationVariables)
+     *  }
+     */
     Optional.ofNullable(configurationVariables).ifPresent(variablesContext::putAll);
+    //处理<include>节点
     applyIncludes(source, variablesContext, false);
   }
 
@@ -54,36 +62,69 @@ public class XMLIncludeTransformer {
    * Recursively apply includes through all SQL fragments.
    * @param source Include node in DOM tree
    * @param variablesContext Current context for static variables with values
+   * @param included 如果为true，表明找到了refid对应的sql节点，
    */
   private void applyIncludes(Node source, final Properties variablesContext, boolean included) {
+    // 判断此节点是不是<include>节点
     if (source.getNodeName().equals("include")) {
+      //是<include>节点
+      //通过refid的属性值，获取<sql>节点的深度克隆对象
       Node toInclude = findSqlFragment(getStringAttribute(source, "refid"), variablesContext);
+      //获取<include>标签下的<property>的name 和 value，然后把其添加到variablesContext中
       Properties toIncludeContext = getVariablesContext(source, variablesContext);
+      //然后把 included属性设置为 true
       applyIncludes(toInclude, toIncludeContext, true);
       if (toInclude.getOwnerDocument() != source.getOwnerDocument()) {
         toInclude = source.getOwnerDocument().importNode(toInclude, true);
       }
+      //将<include>节点替换成<sql>节点
       source.getParentNode().replaceChild(toInclude, source);
       while (toInclude.hasChildNodes()) {
+        //将<sql>节点的子节点添加到<sql>节点前面
         toInclude.getParentNode().insertBefore(toInclude.getFirstChild(), toInclude);
       }
+      //删除<sql>节点
       toInclude.getParentNode().removeChild(toInclude);
-    } else if (source.getNodeType() == Node.ELEMENT_NODE) {
+    }
+    //判断节点是不是元素节点（Element 对象表示 XML 文档中的元素。元素可包含属性、其他元素或文本。）
+    else if (source.getNodeType() == Node.ELEMENT_NODE) {
+      //是元素节点
       if (included && !variablesContext.isEmpty()) {
         // replace variables in attribute values
         NamedNodeMap attributes = source.getAttributes();
         for (int i = 0; i < attributes.getLength(); i++) {
           Node attr = attributes.item(i);
-          attr.setNodeValue(PropertyParser.parse(attr.getNodeValue(), variablesContext));
+          //没有必要使用attr.setNodeValue(PropertyParser.parse(attr.getNodeValue(), variablesContext));
+          //直接使用"PropertyParser.parse(attr.getNodeValue(),variablesContext);"即可
+         attr.setNodeValue(PropertyParser.parse(attr.getNodeValue(), variablesContext));
         }
       }
+      //获取当前节点的子节点
+      // 如果如下所示：那么得到子节点就是文本节点
+      // 1. <select id="selectAuthor" resultMap="authorResultMap">
+      //      select author_id ,author_username , author_password ,author_email from tb_author where author_id = #{id}
+      //    </select>
+
+
+      // 2.  <sql id="fromSqlElement">
+      //    from ${tablename}
+      //    <include refid="whereSqlElement">
+      //      <property name="idValue" value="1"/>
+      //    </include>
+      //  </sql>
+      // <sql id="whereSqlElement">
+      //    where blog_id = ${idValue}
+      //  </sql>
       NodeList children = source.getChildNodes();
       for (int i = 0; i < children.getLength(); i++) {
         applyIncludes(children.item(i), variablesContext, included);
       }
-    } else if (included && (source.getNodeType() == Node.TEXT_NODE || source.getNodeType() == Node.CDATA_SECTION_NODE)
+    }
+
+    else if (included && (source.getNodeType() == Node.TEXT_NODE || source.getNodeType() == Node.CDATA_SECTION_NODE)
         && !variablesContext.isEmpty()) {
       // replace variables in text node
+      // 如果是included 并且这是一个文本节点或者是一个不转换类型的节点，并且参数值不是空的
       source.setNodeValue(PropertyParser.parse(source.getNodeValue(), variablesContext));
     }
   }
@@ -92,7 +133,9 @@ public class XMLIncludeTransformer {
     refid = PropertyParser.parse(refid, variables);
     refid = builderAssistant.applyCurrentNamespace(refid, true);
     try {
+      //查找refid对应的sql片段
       XNode nodeToInclude = configuration.getSqlFragments().get(refid);
+      //返回其深度克隆的Node对象
       return nodeToInclude.getNode().cloneNode(true);
     } catch (IllegalArgumentException e) {
       throw new IncompleteElementException("Could not find SQL statement to include with refid '" + refid + "'", e);
