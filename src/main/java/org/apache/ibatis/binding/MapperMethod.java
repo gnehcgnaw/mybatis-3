@@ -39,14 +39,20 @@ import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.session.SqlSession;
 
 /**
+ * MapperMethod中封装了Mapper接口中对应方法的信息，以及对应SQL语句的信息，MapperMethod可以看做是Mapper接口以及映射配置文件中定义的SQL语句的桥梁。
  * @author Clinton Begin
  * @author Eduardo Macarron
  * @author Lasse Voss
  * @author Kazuki Shimizu
  */
 public class MapperMethod {
-
+  /**
+   * 记录了SQL语句的名称和类型
+   */
   private final SqlCommand command;
+  /**
+   * Mapper接口中对应方法的相关新
+   */
   private final MethodSignature method;
 
   public MapperMethod(Class<?> mapperInterface, Method method, Configuration config) {
@@ -225,8 +231,13 @@ public class MapperMethod {
   }
 
   public static class SqlCommand {
-
+    /**
+     * 记录SQL语句的名称
+     */
     private final String name;
+    /**
+     * 记录SQL语句的类型
+     */
     private final SqlCommandType type;
 
     public SqlCommand(Configuration configuration, Class<?> mapperInterface, Method method) {
