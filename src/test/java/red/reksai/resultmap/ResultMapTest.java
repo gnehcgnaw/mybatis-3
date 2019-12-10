@@ -47,11 +47,6 @@ public class ResultMapTest {
     System.out.println(JSON.toJSONString(tbCommentMapper.selectComment(1)));
   }
 
-  @Test
-  public void testSelectBlogDetails1(){
-    List<Map> tbBlogs = tbBlogMapper.selectBlogDetails1(1);
-    System.out.println(JSON.toJSONString(tbBlogs));
-  }
 
   @Test
   public void testSelectBlogDetails2(){

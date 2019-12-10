@@ -341,12 +341,12 @@ public class XMLMapperBuilder extends BaseBuilder {
      *    2. 直接保存，出现一个resolveClass中的一个{@link org.apache.ibatis.binding.BindingException} , Error resolving class. Cause: e
      *  所以接下来的一步if(typeClass=null)，就显得没有必要了，
      *  --------------------    这留下了我第二个疑问，希望在跟后续步骤的时候可以解决掉。
-     *
+     *  会存在`type==null`的时候，例如`association`、`collection`、`case`标签都能出现`type`为`null`，
+     * 因为他们的属性没有`id`、`ofType`、`resultType`、`javaType`这些，但是其子节点也是能嵌套`resultMap`的，这些被称为**匿名嵌套映射**。
      *  跟踪后续代码，疑问被解决了：参看{@link  XMLMapperBuilder#processNestedResultMappings(XNode, List, Class)}
      */
     //获取resultMap映射的Class类型
     Class<?> typeClass = resolveClass(type);
-    //这步骤的意义何在？
     if (typeClass == null) {
       typeClass = inheritEnclosingType(resultMapNode, enclosingType);
     }
@@ -378,7 +378,6 @@ public class XMLMapperBuilder extends BaseBuilder {
     //获取<resultMap id  extends autoMapping>中的 id、extends、autoMapping的属性值
     //获取resultMap的id属性的属性值，如果为null，则返回默认值，默认值的生成规则是XNode.getValueBasedIdentifier()方法
     //但是"id CDATA #REQUIRED"，即id属性是必须的，也就是用不上默认的生成规则，XNode.getValueBasedIdentifier()就在这显得的非常多余
-    // todo
     String id = resultMapNode.getStringAttribute("id",
             resultMapNode.getValueBasedIdentifier());
     //获取<resultMap>节点的extends属性的值，该属性指定了<resultMap>节点的继承关系
@@ -398,6 +397,12 @@ public class XMLMapperBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   *
+   * @param resultMapNode <></>
+   * @param enclosingType
+   * @return
+   */
   protected Class<?> inheritEnclosingType(XNode resultMapNode, Class<?> enclosingType) {
     if ("association".equals(resultMapNode.getName()) && resultMapNode.getStringAttribute("resultMap") == null) {
       String property = resultMapNode.getStringAttribute("property");
@@ -424,13 +429,17 @@ public class XMLMapperBuilder extends BaseBuilder {
    * @throws Exception
    */
   private void processConstructorElement(XNode resultChild, Class<?> resultType, List<ResultMapping> resultMappings) throws Exception {
+    //获取<constructor>下的子节点
     List<XNode> argChildren = resultChild.getChildren();
     for (XNode argChild : argChildren) {
       List<ResultFlag> flags = new ArrayList<>();
+      //添加CONSTRUCTOR标志
       flags.add(ResultFlag.CONSTRUCTOR);
+      //如果包含idArg，添加ID标志
       if ("idArg".equals(argChild.getName())) {
         flags.add(ResultFlag.ID);
       }
+      //创建ResultMapping对象，并添加到resultMappings集合中
       resultMappings.add(buildResultMappingFromContext(argChild, resultType, flags));
     }
   }
@@ -446,6 +455,7 @@ public class XMLMapperBuilder extends BaseBuilder {
     Map<String, String> discriminatorMap = new HashMap<>();
     for (XNode caseChild : context.getChildren()) {
       String value = caseChild.getStringAttribute("value");
+      //case节点内是可以定义resultMap的，所以还要去迭代解析直到所有的嵌套的resultMap解析完成为止
       String resultMap = caseChild.getStringAttribute("resultMap", processNestedResultMappings(caseChild, resultMappings, resultType));
       discriminatorMap.put(value, resultMap);
     }

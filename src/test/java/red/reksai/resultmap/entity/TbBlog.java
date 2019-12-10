@@ -15,6 +15,10 @@ public class TbBlog implements Serializable{
   public TbBlog() {
   }
 
+  public TbBlog(Integer blogId) {
+    this.blogId = blogId;
+  }
+
   private int blogId;
 
   private String blogTitle;

@@ -107,20 +107,20 @@ columnPrefix CDATA #IMPLIED
 
 <!ELEMENT collection (constructor?,id*,result*,association*,collection*, discriminator?)>
 <!ATTLIST collection
-property CDATA #REQUIRED
-column CDATA #IMPLIED
-javaType CDATA #IMPLIED
-ofType CDATA #IMPLIED
-jdbcType CDATA #IMPLIED
-select CDATA #IMPLIED
-resultMap CDATA #IMPLIED
-typeHandler CDATA #IMPLIED
-notNullColumn CDATA #IMPLIED
-columnPrefix CDATA #IMPLIED
-resultSet CDATA #IMPLIED
-foreignColumn CDATA #IMPLIED
-autoMapping (true|false) #IMPLIED
-fetchType (lazy|eager) #IMPLIED
+        property CDATA #REQUIRED
+        column CDATA #IMPLIED
+        javaType CDATA #IMPLIED
+        ofType CDATA #IMPLIED
+        jdbcType CDATA #IMPLIED
+        select CDATA #IMPLIED
+        resultMap CDATA #IMPLIED
+        typeHandler CDATA #IMPLIED
+        notNullColumn CDATA #IMPLIED
+        columnPrefix CDATA #IMPLIED
+        resultSet CDATA #IMPLIED
+        foreignColumn CDATA #IMPLIED
+        autoMapping (true|false) #IMPLIED
+        fetchType (lazy|eager) #IMPLIED
 >
 
 <!ELEMENT association (constructor?,id*,result*,association*,collection*, discriminator?)>
