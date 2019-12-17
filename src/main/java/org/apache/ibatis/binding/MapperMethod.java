@@ -51,7 +51,7 @@ public class MapperMethod {
    */
   private final SqlCommand command;
   /**
-   * Mapper接口中对应方法的相关新
+   * Mapper接口中对应方法的相关信息
    */
   private final MethodSignature method;
 
@@ -68,14 +68,16 @@ public class MapperMethod {
    */
   public Object execute(SqlSession sqlSession, Object[] args) {
     Object result;
-    //获取命令的类型，然后根据不同类型去执行
+    //根据SQL语句的类型调用SqlSession对应的方法
     switch (command.getType()) {
       case INSERT: {
-        //整理参数
+        //使用ParamNameResolver处理arg[]数组（用户差内的实参列表），将用户传入的实参与指定参数名称关联起来
         Object param = method.convertArgsToSqlCommandParam(args);
+        //调用SqlSession.insert()方法，rowCountResult()方法会根据method字段中记录的反复的返回值类型对结果进行转换
         result = rowCountResult(sqlSession.insert(command.getName(), param));
         break;
       }
+      //UPDATE和DELETE类型的SQL语句的处理与INSERT类型的SQL语句类似，唯一的区别是调用了SqlSession的update()方法和delete()方法
       case UPDATE: {
         Object param = method.convertArgsToSqlCommandParam(args);
         result = rowCountResult(sqlSession.update(command.getName(), param));
@@ -240,12 +242,22 @@ public class MapperMethod {
      */
     private final SqlCommandType type;
 
+    /**
+     * @param configuration
+     * @param mapperInterface 接口对应的Class对象
+     * @param method  对应的方法
+     */
     public SqlCommand(Configuration configuration, Class<?> mapperInterface, Method method) {
+       //获取方法的名称
       final String methodName = method.getName();
+      //获取声明类
       final Class<?> declaringClass = method.getDeclaringClass();
+      //获取对应的MapperStatement对象
       MappedStatement ms = resolveMappedStatement(mapperInterface, methodName, declaringClass,
           configuration);
+      //判断MappedStatement对象是否为空
       if (ms == null) {
+        //判断当前方法上是不是有@Flush注解
         if (method.getAnnotation(Flush.class) != null) {
           name = null;
           type = SqlCommandType.FLUSH;
@@ -272,7 +284,9 @@ public class MapperMethod {
 
     private MappedStatement resolveMappedStatement(Class<?> mapperInterface, String methodName,
         Class<?> declaringClass, Configuration configuration) {
+      //获取statementId
       String statementId = mapperInterface.getName() + "." + methodName;
+      //判断是否statementId指定的MappedStatement
       if (configuration.hasStatement(statementId)) {
         return configuration.getMappedStatement(statementId);
       } else if (mapperInterface.equals(declaringClass)) {
@@ -291,21 +305,55 @@ public class MapperMethod {
     }
   }
 
+  /**
+   * 方法签名
+   */
   public static class MethodSignature {
-
+    /**
+     * 返回值类型是否为Collection类型或者是数组类型
+     */
     private final boolean returnsMany;
+    /**
+     * 返回值类型是否是Map类型
+     */
     private final boolean returnsMap;
+    /**
+     * 返回值类型是否为Void类型
+     */
     private final boolean returnsVoid;
+    /**
+     * 返回值是否是Cursor类型
+     */
     private final boolean returnsCursor;
+    /**
+     * 返回值是否是Optional类型
+     */
     private final boolean returnsOptional;
+    /**
+     * 返回值类型
+     */
     private final Class<?> returnType;
+    /**
+     * 如果返回值类型是Map,则该字段记录了作为key的列名
+     */
     private final String mapKey;
+    /**
+     * 用来标记该方法参数列表中ResultHandler类型参数的位置
+     */
     private final Integer resultHandlerIndex;
+    /**
+     * 用来标记该方法参数列表中RowBounds类型参数位置
+     */
     private final Integer rowBoundsIndex;
+    /**
+     * 该方法对应的ParamNameResolver对象
+     */
     private final ParamNameResolver paramNameResolver;
 
     public MethodSignature(Configuration configuration, Class<?> mapperInterface, Method method) {
+      //解析方法的返回值类型
       Type resolvedReturnType = TypeParameterResolver.resolveReturnType(method, mapperInterface);
+      //初始话MethodSignature的字段
       if (resolvedReturnType instanceof Class<?>) {
         this.returnType = (Class<?>) resolvedReturnType;
       } else if (resolvedReturnType instanceof ParameterizedType) {
@@ -313,19 +361,24 @@ public class MapperMethod {
       } else {
         this.returnType = method.getReturnType();
       }
+      //初始化returnsVoid、returnsMany、returnsCursor、returnsOptional字段
       this.returnsVoid = void.class.equals(this.returnType);
       this.returnsMany = configuration.getObjectFactory().isCollection(this.returnType) || this.returnType.isArray();
       this.returnsCursor = Cursor.class.equals(this.returnType);
       this.returnsOptional = Optional.class.equals(this.returnType);
+      //若Method对应的方法的返回值是Map且指定了@MapKey注解，则使用getMapKey()方法处理
       this.mapKey = getMapKey(method);
       this.returnsMap = this.mapKey != null;
+      //初始话rowBoundsIndex
       this.rowBoundsIndex = getUniqueParamIndex(method, RowBounds.class);
+      //初始化resultHandlerIndex
       this.resultHandlerIndex = getUniqueParamIndex(method, ResultHandler.class);
+      //创建ParamNameResolver对象
       this.paramNameResolver = new ParamNameResolver(configuration, method);
     }
 
     /**
-     * 将args转化为sql的命令参数
+     * 负责将agr[]数组（用户传入的实参列表）转化成SQL语句的参数列表，它是通过ParamNameResolver.getNamedParams()方法完成的。
      * @param args
      * @return
      */
@@ -385,11 +438,14 @@ public class MapperMethod {
     private Integer getUniqueParamIndex(Method method, Class<?> paramType) {
       Integer index = null;
       final Class<?>[] argTypes = method.getParameterTypes();
+      //遍历MethodSignature对应方法的参数列表
       for (int i = 0; i < argTypes.length; i++) {
         if (paramType.isAssignableFrom(argTypes[i])) {
           if (index == null) {
+            //记录paramType类型参数在参数列表中的位置索引
             index = i;
           } else {
+            //RowBounds和ResultHandler类型的参数只能有一个，不能重复出现
             throw new BindingException(method.getName() + " cannot have multiple " + paramType.getSimpleName() + " parameters");
           }
         }
@@ -399,9 +455,13 @@ public class MapperMethod {
 
     private String getMapKey(Method method) {
       String mapKey = null;
+      //首先判断返回值类型是不是Map
       if (Map.class.isAssignableFrom(method.getReturnType())) {
+        //是map
+        //看有没有MapKey注解
         final MapKey mapKeyAnnotation = method.getAnnotation(MapKey.class);
         if (mapKeyAnnotation != null) {
+          //有MapKey注解则返回，对应的值
           mapKey = mapKeyAnnotation.value();
         }
       }

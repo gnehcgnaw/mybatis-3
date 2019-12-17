@@ -158,6 +158,9 @@ public class Configuration {
   protected final InterceptorChain interceptorChain = new InterceptorChain();
   protected final TypeHandlerRegistry typeHandlerRegistry = new TypeHandlerRegistry(this);
   protected final TypeAliasRegistry typeAliasRegistry = new TypeAliasRegistry();
+  /**
+   * 记录当前使用的LanguageDriverRegistry
+   */
   protected final LanguageDriverRegistry languageRegistry = new LanguageDriverRegistry();
   /**
    * 映射语句对象集合
@@ -848,12 +851,19 @@ public class Configuration {
     return mapperRegistry.hasMapper(type);
   }
 
+  /**
+   * 判断{@link Configuration#mappedStatements}集合中是否包含statementName对应{@link MappedStatement}对象
+   * @param statementName
+   * @return
+   */
   public boolean hasStatement(String statementName) {
     return hasStatement(statementName, true);
   }
 
   public boolean hasStatement(String statementName, boolean validateIncompleteStatements) {
+    //是否验证不完整性陈述
     if (validateIncompleteStatements) {
+      //验证不完整性陈述
       buildAllStatements();
     }
     return mappedStatements.containsKey(statementName);
@@ -863,7 +873,7 @@ public class Configuration {
     cacheRefMap.put(namespace, referencedNamespace);
   }
 
-  /*
+  /**
    * Parses all the unprocessed statement nodes in the cache. It is recommended
    * to call this method once all the mappers are added as it provides fail-fast
    * statement validation.
@@ -893,6 +903,9 @@ public class Configuration {
     }
   }
 
+  /**
+   * 解析待处理的结果视图
+   */
   private void parsePendingResultMaps() {
     if (incompleteResultMaps.isEmpty()) {
       return;

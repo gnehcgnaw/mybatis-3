@@ -18,10 +18,19 @@ package org.apache.ibatis.scripting.xmltags;
 import java.util.List;
 
 /**
+ * 如果在编写动态SQL语句时，需要类似java中的switch语句的功能，可以考虑使用<choose>、<when>、<otherwise>三个标签组合，
+ * Mybatis会将<chose>标签解析成ChooseSqlNode，将<when>标签解析成IfSqlNode,将<otherwise>解析成MixedSqlNode。
  * @author Clinton Begin
  */
 public class ChooseSqlNode implements SqlNode {
+
+  /**
+   * <otherwise>节点对应的SqlNode
+   */
   private final SqlNode defaultSqlNode;
+  /**
+   * <when>节点对应的IfSqlNode集合
+   */
   private final List<SqlNode> ifSqlNodes;
 
   public ChooseSqlNode(List<SqlNode> ifSqlNodes, SqlNode defaultSqlNode) {

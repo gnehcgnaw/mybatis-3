@@ -29,6 +29,10 @@ import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.type.JdbcType;
 
 /**
+ * 在经过SqlNode.apply()方法的解析之后，SQL语句会被传递到SqlSourceBuilder中进行进一步解析。
+ *   SqlSourceBuilder主要完成了两部分的操作：
+ *       1. 解析SQL语句中的#{} 占位符中定义的属性，格式类似于 #{__frc_item_0,javaType=int ,jdbcType=NUMERIC,typeHandler=MyTypeHandler}
+ *       2. 将SQL语句中的#{}占位符替换成？占位符
  * @author Clinton Begin
  */
 public class SqlSourceBuilder extends BaseBuilder {

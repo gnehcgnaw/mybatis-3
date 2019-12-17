@@ -89,6 +89,7 @@ public class XMLIncludeTransformer {
     //判断节点是不是元素节点（Element 对象表示 XML 文档中的元素。元素可包含属性、其他元素或文本。）
     else if (source.getNodeType() == Node.ELEMENT_NODE) {
       //是元素节点
+      // variablesContext不等于空，并且include为true
       if (included && !variablesContext.isEmpty()) {
         // replace variables in attribute values
         NamedNodeMap attributes = source.getAttributes();
@@ -99,22 +100,6 @@ public class XMLIncludeTransformer {
          attr.setNodeValue(PropertyParser.parse(attr.getNodeValue(), variablesContext));
         }
       }
-      //获取当前节点的子节点
-      // 如果如下所示：那么得到子节点就是文本节点
-      // 1. <select id="selectAuthor" resultMap="authorResultMap">
-      //      select author_id ,author_username , author_password ,author_email from tb_author where author_id = #{id}
-      //    </select>
-
-
-      // 2.  <sql id="fromSqlElement">
-      //    from ${tablename}
-      //    <include refid="whereSqlElement">
-      //      <property name="idValue" value="1"/>
-      //    </include>
-      //  </sql>
-      // <sql id="whereSqlElement">
-      //    where blog_id = ${idValue}
-      //  </sql>
       NodeList children = source.getChildNodes();
       for (int i = 0; i < children.getLength(); i++) {
         applyIncludes(children.item(i), variablesContext, included);

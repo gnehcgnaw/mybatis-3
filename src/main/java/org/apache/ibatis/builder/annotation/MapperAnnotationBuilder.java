@@ -124,17 +124,21 @@ public class MapperAnnotationBuilder {
 
   public void parse() {
     String resource = type.toString();
+    //检测是否加载过对应的映射配置文件，如果未加载，则创建XMLMapperBuilder对象解析对应的映射文件，该过程就是在研究Mapper映射文件解析的时候一样。
     if (!configuration.isResourceLoaded(resource)) {
       loadXmlResource();
       configuration.addLoadedResource(resource);
       assistant.setCurrentNamespace(type.getName());
+      //解析@CacheNameSpace注解
       parseCache();
+      //解析@CacheNamespaceRef注解
       parseCacheRef();
       Method[] methods = type.getMethods();
       for (Method method : methods) {
         try {
           // issue #237
           if (!method.isBridge()) {
+            //解析@SelectKey、@ResutMap等注解，并创建MapperStatement对象
             parseStatement(method);
           }
         } catch (IncompleteElementException e) {
@@ -142,18 +146,25 @@ public class MapperAnnotationBuilder {
         }
       }
     }
+    //遍历Configuration.incompleteMethod集合中记录的未解析的方法，并重新解析
     parsePendingMethods();
   }
 
   private void parsePendingMethods() {
+    //获取Configuration.incompleteMethods集合
     Collection<MethodResolver> incompleteMethods = configuration.getIncompleteMethods();
+    //加锁同步
     synchronized (incompleteMethods) {
+      //遍历incompleteMethods
       Iterator<MethodResolver> iter = incompleteMethods.iterator();
       while (iter.hasNext()) {
         try {
+          //重新解析SQL语句节点
           iter.next().resolve();
+          //移除MethodResolver对象
           iter.remove();
         } catch (IncompleteElementException e) {
+          //如果依然无法解析，则忽略该节点
           // This method is still missing a resource
         }
       }
@@ -164,6 +175,9 @@ public class MapperAnnotationBuilder {
     // Spring may not know the real resource name so we check a flag
     // to prevent loading again a resource twice
     // this flag is set at XMLMapperBuilder#bindMapperForNamespace
+    // Spring可能不知道真实的资源名称，所以我们检查一个标志
+    // 以防止再次加载资源两次
+    // 此标志在XMLMapperBuilder＃bindMapperForNamespace设置
     if (!configuration.isResourceLoaded("namespace:" + type.getName())) {
       String xmlResource = type.getName().replace('.', '/') + ".xml";
       // #1347

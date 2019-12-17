@@ -17,7 +17,8 @@ package org.apache.ibatis.session;
 
 import java.sql.Connection;
 
-/**
+/**c
+ * 负责创建SqlSession对象，其中包含多个openSession()方法的重载，可以通过其参数指定事务的隔离级别，底层使用Executor的类型以及是否自动提交事务等方面的配置。
  * Creates an {@link SqlSession} out of a connection or a DataSource
  *
  * @author Clinton Begin

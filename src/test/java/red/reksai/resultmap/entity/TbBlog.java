@@ -12,6 +12,7 @@ import java.util.List;
 @Data
 public class TbBlog implements Serializable{
 
+  public static  String  staticField ;
   public TbBlog() {
   }
 

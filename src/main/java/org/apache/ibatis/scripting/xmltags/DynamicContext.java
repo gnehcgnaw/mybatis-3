@@ -27,6 +27,7 @@ import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.session.Configuration;
 
 /**
+ * 主要用于记录解析动态SQL语句以后产生的SQL语句片段，可以把它认为是一个用于记录动态SQL语句解析结果的容器。
  * @author Clinton Begin
  */
 public class DynamicContext {
@@ -38,7 +39,16 @@ public class DynamicContext {
     OgnlRuntime.setPropertyAccessor(ContextMap.class, new ContextAccessor());
   }
 
+  /**
+   * 参数上下文
+   */
   private final ContextMap bindings;
+  /**
+   *
+   * 在SqlNode解析动态SQL时，会将解析后的SQL语句片段添加到该属性中保存，最终拼接成一条完成的SQL语句。
+   * （StringJoiner是java8中的新类）
+   *
+   */
   private final StringJoiner sqlBuilder = new StringJoiner(" ");
   private int uniqueNumber = 0;
 
@@ -62,10 +72,18 @@ public class DynamicContext {
     bindings.put(name, value);
   }
 
+  /**
+   * 追加SQL片段
+   * @param sql
+   */
   public void appendSql(String sql) {
     sqlBuilder.add(sql);
   }
 
+  /**
+   * 获取解析后的、完整的SQL语句
+   * @return
+   */
   public String getSql() {
     return sqlBuilder.toString().trim();
   }
@@ -74,8 +92,14 @@ public class DynamicContext {
     return uniqueNumber++;
   }
 
+  /**
+   * ContextMap是DynamicContext中定义的内部类，它实现了HashMap，并重写了get()方法
+   */
   static class ContextMap extends HashMap<String, Object> {
     private static final long serialVersionUID = 2977601501966151582L;
+    /**
+     * 将用户传入的参数封装成MetaObject对象
+     */
     private final MetaObject parameterMetaObject;
     private final boolean fallbackParameterObject;
 
@@ -84,9 +108,15 @@ public class DynamicContext {
       this.fallbackParameterObject = fallbackParameterObject;
     }
 
+    /**
+     * 重写了HashMap的get()方法，
+     * @param key
+     * @return
+     */
     @Override
     public Object get(Object key) {
       String strKey = (String) key;
+      //如果ContextMap中已经包含了该key，则直接返回
       if (super.containsKey(strKey)) {
         return super.get(strKey);
       }

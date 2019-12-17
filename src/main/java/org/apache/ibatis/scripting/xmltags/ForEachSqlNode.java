@@ -21,19 +21,47 @@ import org.apache.ibatis.parsing.GenericTokenParser;
 import org.apache.ibatis.session.Configuration;
 
 /**
+ * <foreach>对应的SqlNode实现
+ *
+ * 在动态SQL语句中构建in条件语句的时候，通常需要对一个集合进行迭代，Mybatis提供了<foreach>标签实现该功能。
+ * 在使用<foreach>标签迭代集合时，不仅可以使用集合的元素和索引值，还可以在循环的开始之前或结束之后添加指定的字符串，
+ * 也允许在迭代的过程中添加指定的分隔符。
  * @author Clinton Begin
  */
 public class ForEachSqlNode implements SqlNode {
   public static final String ITEM_PREFIX = "__frch_";
 
+  /**
+   * 用于判断循环的终止条件，ForEachSqlNode构造方法中会创建该对象
+   */
   private final ExpressionEvaluator evaluator;
+  /**
+   * 迭代的集合表达式
+   */
   private final String collectionExpression;
+  /**
+   * 记录了ForEachSqlNode节点的子节点
+   */
   private final SqlNode contents;
+  /**
+   * 在循环开始前添加的字符串
+   */
   private final String open;
+  /**
+   * 在循环结束后要添加的字符串
+   */
   private final String close;
+  /**
+   * 在循环过程中，每项之间的分隔符
+   */
   private final String separator;
+  /**
+   * index当前迭代的次数 ，item本次迭代的元素，
+   *    如迭代的集合时map，则index是间，item是值
+   */
   private final String item;
   private final String index;
+
   private final Configuration configuration;
 
   public ForEachSqlNode(Configuration configuration, SqlNode contents, String collectionExpression, String index, String item, String open, String close, String separator) {
@@ -119,7 +147,13 @@ public class ForEachSqlNode implements SqlNode {
     return ITEM_PREFIX + item + "_" + i;
   }
 
+  /**
+   * 负责处理#{}占位符，但它并未完全解析#{}
+   */
   private static class FilteredDynamicContext extends DynamicContext {
+    /**
+     * 底层封装的DynamicContext对象
+     */
     private final DynamicContext delegate;
     private final int index;
     private final String itemIndex;
@@ -148,11 +182,20 @@ public class ForEachSqlNode implements SqlNode {
       return delegate.getSql();
     }
 
+    /**
+     *
+     * @param sql
+     */
     @Override
     public void appendSql(String sql) {
+      //创建GenericTokenParser解析器，注意这里匿名实现了TokenHandler对象
       GenericTokenParser parser = new GenericTokenParser("#{", "}", content -> {
+        //对item进行处理
+        //#{item} ---> #{__frch_item_1}
         String newContent = content.replaceFirst("^\\s*" + item + "(?![^.,:\\s])", itemizeItem(item, index));
+        //对itemIndex进行处理
         if (itemIndex != null && newContent.equals(content)) {
+          //例如： #{itemIndex} ---> #{__frch_itemIndex_1}
           newContent = content.replaceFirst("^\\s*" + itemIndex + "(?![^.,:\\s])", itemizeItem(itemIndex, index));
         }
         return "#{" + newContent + "}";
@@ -168,10 +211,21 @@ public class ForEachSqlNode implements SqlNode {
 
   }
 
-
+  /**
+   * 处理前缀
+   */
   private class PrefixedContext extends DynamicContext {
+    /**
+     * 底层封装的DynamicContext对象
+     */
     private final DynamicContext delegate;
+    /**
+     * 指定的前缀
+     */
     private final String prefix;
+    /**
+     * 是否已经处理过前缀
+     */
     private boolean prefixApplied;
 
     public PrefixedContext(DynamicContext delegate, String prefix) {
@@ -197,10 +251,14 @@ public class ForEachSqlNode implements SqlNode {
 
     @Override
     public void appendSql(String sql) {
+      //判断是否需要追加前缀
       if (!prefixApplied && sql != null && sql.trim().length() > 0) {
+        //追加前缀
         delegate.appendSql(prefix);
+        //表示已经处理前缀
         prefixApplied = true;
       }
+      //追加SQL片段
       delegate.appendSql(sql);
     }
 

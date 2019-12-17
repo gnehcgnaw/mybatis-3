@@ -2,6 +2,7 @@ package red.reksai.resultmap;
 
 import com.alibaba.fastjson.JSON;
 import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.parsing.XNode;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.junit.BeforeClass;
@@ -73,5 +74,10 @@ public class ResultMapTest {
     tbAuthor.setAuthorPassword("123456");
     tbAuthor.setAuthorEmail("lisi@gmail.com");
     System.out.println(tbAuthorMapper.insertAuthor(tbAuthor));
+  }
+
+  @Test
+  public void testSelectAuthorByName(){
+    System.out.println(tbAuthorMapper.selectAuthorByName("lisi"));
   }
 }

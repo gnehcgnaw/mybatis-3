@@ -25,6 +25,7 @@ import org.apache.ibatis.scripting.defaults.DefaultParameterHandler;
 import org.apache.ibatis.session.Configuration;
 
 /**
+ * 只是一个测试案例。不是真正的Velocity实现
  * Just a test case. Not a real Velocity implementation.
  */
 public class VelocityLanguageDriver implements LanguageDriver {

@@ -18,6 +18,7 @@ package org.apache.ibatis.builder.xml;
 import java.util.List;
 import java.util.Locale;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.builder.BaseBuilder;
 import org.apache.ibatis.builder.MapperBuilderAssistant;
 import org.apache.ibatis.executor.keygen.Jdbc3KeyGenerator;
@@ -36,6 +37,7 @@ import org.apache.ibatis.session.Configuration;
 /**
  * @author Clinton Begin
  */
+@Slf4j
 public class XMLStatementBuilder extends BaseBuilder {
 
   private final MapperBuilderAssistant builderAssistant;
@@ -95,12 +97,18 @@ public class XMLStatementBuilder extends BaseBuilder {
     XMLIncludeTransformer includeParser = new XMLIncludeTransformer(configuration, builderAssistant);
     //处理include标签：找到对应的<sql>标签，将<sql>标签中的占位符替换成<include>节点下<property>的name对应的属性值，然后用sql片段的语句替换include标签
     includeParser.applyIncludes(context.getNode());
+/*    String sql ="";
+    for (int i = 0; i < context.getNode().getChildNodes().getLength(); i++) {
+      sql+=context.getNode().getChildNodes().item(i).getNodeValue();
+    }
+    System.out.println("解析include和sql之后的语句的样子是"+sql);*/
     //获取parameterType属性的值
     String parameterType = context.getStringAttribute("parameterType");
     Class<?> parameterTypeClass = resolveClass(parameterType);
 
-    //获取lang属性的值
+    //获取lang属性的值（有时我们会针对特殊的语句指定特殊语言，可以通过如下的lang属性完成）
     String lang = context.getStringAttribute("lang");
+    //根据lang属性获取当前的自定义语言驱动类
     LanguageDriver langDriver = getLanguageDriver(lang);
 
     // Parse selectKey after includes and remove them.
@@ -118,7 +126,6 @@ public class XMLStatementBuilder extends BaseBuilder {
           configuration.isUseGeneratedKeys() && SqlCommandType.INSERT.equals(sqlCommandType))
           ? Jdbc3KeyGenerator.INSTANCE : NoKeyGenerator.INSTANCE;
     }
-
     SqlSource sqlSource = langDriver.createSqlSource(configuration, context, parameterTypeClass);
     StatementType statementType = StatementType.valueOf(context.getStringAttribute("statementType", StatementType.PREPARED.toString()));
     Integer fetchSize = context.getIntAttribute("fetchSize");

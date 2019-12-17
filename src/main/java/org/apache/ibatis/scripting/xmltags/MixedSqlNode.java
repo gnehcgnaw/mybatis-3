@@ -18,6 +18,10 @@ package org.apache.ibatis.scripting.xmltags;
 import java.util.List;
 
 /**
+ *
+ * 扮演了树枝节点的角色
+ *
+ * 使用contents字段（List<SqlNode>）记录了其子节点对应的SqlNode对象集合，其apply()方法会循环调用contents集合中所有的SqlNode对象的apply()方法。
  * @author Clinton Begin
  */
 public class MixedSqlNode implements SqlNode {

@@ -109,7 +109,7 @@ public class XMLMapperBuilder extends BaseBuilder {
       configurationElement(parser.evalNode("/mapper"));
       //将resource添加到Configuration.loadedResource结合中保存，这是一个HashSet<String>类型的集合，用于记录已加载过的映射文件
       configuration.addLoadedResource(resource);
-      //为mapper绑定命名空间
+      //完成映射配置文件与对应的Mapper接口的绑定
       bindMapperForNamespace();
     }
 
@@ -472,15 +472,16 @@ public class XMLMapperBuilder extends BaseBuilder {
   }
 
   private void sqlElement(List<XNode> list, String requiredDatabaseId) {
-
+    //遍历所有的<sql>节点
     for (XNode context : list) {
       //解析<sql>节点
       //获取<sql>节点的databaseId属性的值
       String databaseId = context.getStringAttribute("databaseId");
       //获取<sql>节点的id属性的值
       String id = context.getStringAttribute("id");
+      //获取在当前命名空间的对应的全路径id
       id = builderAssistant.applyCurrentNamespace(id, false);
-      //进行数据库ID匹配
+      //进行数据库ID匹配，如果当前sql片段所属的databaseId和configuration.databaseId相等
       if (databaseIdMatchesCurrent(id, databaseId, requiredDatabaseId)) {
         //将匹配的sql片段，放入Configuration.sqlFragments集合中
         sqlFragments.put(id, context);
@@ -489,16 +490,21 @@ public class XMLMapperBuilder extends BaseBuilder {
   }
 
   private boolean databaseIdMatchesCurrent(String id, String databaseId, String requiredDatabaseId) {
+    //configuration.databaseId ！=null,就要判断：configuration.databaseId和当前sql片段中定义的id是否相等
     if (requiredDatabaseId != null) {
+      //相等返回true， 不相等返回false
       return requiredDatabaseId.equals(databaseId);
     }
+    // configuration.databaseId =null && databaseId ！=null ，说明不匹配
     if (databaseId != null) {
       return false;
     }
+    //configuration.databaseId =null && databaseId =null ，这时候要看集合中有没有注册的相同的名称，如果没有，返回true
     if (!this.sqlFragments.containsKey(id)) {
       return true;
     }
     // skip this fragment if there is a previous one with a not null databaseId
+    //configuration.databaseId =null && databaseId =null ,sqlFragments结合中又包含当前ID
     XNode context = this.sqlFragments.get(id);
     return context.getStringAttribute("databaseId") == null;
   }
@@ -616,7 +622,7 @@ public class XMLMapperBuilder extends BaseBuilder {
     if (namespace != null) {
       Class<?> boundType = null;
       try {
-        //解析命名空间对应的类型
+        //解析命名空间对应的类
         boundType = Resources.classForName(namespace);
       } catch (ClassNotFoundException e) {
         //ignore, bound type is not required

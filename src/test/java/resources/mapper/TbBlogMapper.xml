@@ -16,6 +16,8 @@
         <collection property="tbComments" ofType="red.reksai.resultmap.entity.TbComment"/>
     </collection>
   </resultMap>
+
+
   <select id="selectBlogDetails2" resultMap="selectBlogDetailsResultMap2">
     select
       tb.blog_id as blog_id ,
@@ -81,6 +83,7 @@
       <property name="idValue" value="1"/>
     </include>
   </sql>
+
 
   <select id="selectBlogList" resultType="map">
     select *

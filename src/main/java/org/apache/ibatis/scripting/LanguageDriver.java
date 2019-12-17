@@ -24,7 +24,15 @@ import org.apache.ibatis.scripting.defaults.DefaultParameterHandler;
 import org.apache.ibatis.session.Configuration;
 
 /**
+ * MyBatis 从 3.2 开始支持可插拔脚本语言，这允许你插入一种脚本语言驱动，并基于这种语言来编写动态 SQL 查询语句。
+ *    一旦设定了自定义语言驱动，你就可以在 mybatis-config.xml 文件中，通过setting=defaultScriptingLanguage将它设置为默认语言；
+ *    除了设置默认语言，你也可以针对特殊的语句指定特定语言，可以通过如下的 lang 属性来完成；
+ *    或者，如果你使用的是映射器接口类，在抽象方法上加上 @Lang 注解即可：
  *
+ *    可以将 Apache Velocity 作为动态语言来使用，更多细节请参考 MyBatis-Velocity 项目。
+ *    前面看到的所有 xml 标签都是由默认 MyBatis 语言提供的，而它由别名为 xml 的语言驱动器 org.apache.ibatis.scripting.xmltags.XmlLanguageDriver 所提供。
+ * @see org.apache.ibatis.scripting.xmltags.XMLLanguageDriver
+ * @see org.apache.ibatis.scripting.defaults.RawLanguageDriver
  */
 public interface LanguageDriver {
 

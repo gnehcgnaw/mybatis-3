@@ -28,11 +28,19 @@ import org.apache.ibatis.builder.BuilderException;
  */
 public class ExpressionEvaluator {
 
+  /**
+   *
+   * @param expression  表达式
+   * @param parameterObject 比较的对象
+   * @return
+   */
   public boolean evaluateBoolean(String expression, Object parameterObject) {
     Object value = OgnlCache.getValue(expression, parameterObject);
+    //处理Boolean类型
     if (value instanceof Boolean) {
       return (Boolean) value;
     }
+    //处理数字类型
     if (value instanceof Number) {
       return new BigDecimal(String.valueOf(value)).compareTo(BigDecimal.ZERO) != 0;
     }

@@ -23,6 +23,9 @@ import org.apache.ibatis.scripting.ScriptingException;
 import org.apache.ibatis.type.SimpleTypeRegistry;
 
 /**
+ * 扮演树叶节点的角色
+ *    包含了${}占位符的动态SQL节点。
+ *        举例： id=${id}  ---> id = 1
  * @author Clinton Begin
  */
 public class TextSqlNode implements SqlNode {
@@ -48,6 +51,7 @@ public class TextSqlNode implements SqlNode {
 
   @Override
   public boolean apply(DynamicContext context) {
+    //创建GenericTokenParser解析器，
     GenericTokenParser parser = createParser(new BindingTokenParser(context, injectionFilter));
     context.appendSql(parser.parse(text));
     return true;
@@ -57,6 +61,12 @@ public class TextSqlNode implements SqlNode {
     return new GenericTokenParser("${", "}", handler);
   }
 
+  /**
+   * BindingTokenParser是TextSqlNode的静态内部类，继承了TokenHandler接口
+   *    它的主要功能是根据DynamicContext.bindings集合中的信息解析SQL语句节点中的${}占位符
+   *
+   *    举例： id=${id}  ---> id = 1
+   */
   private static class BindingTokenParser implements TokenHandler {
 
     private DynamicContext context;
@@ -69,14 +79,17 @@ public class TextSqlNode implements SqlNode {
 
     @Override
     public String handleToken(String content) {
+      //获取用户提供的实参
       Object parameter = context.getBindings().get("_parameter");
       if (parameter == null) {
         context.getBindings().put("value", null);
       } else if (SimpleTypeRegistry.isSimpleType(parameter.getClass())) {
         context.getBindings().put("value", parameter);
       }
+      //通过OGNL解析context的值
       Object value = OgnlCache.getValue(content, context.getBindings());
       String srtValue = value == null ? "" : String.valueOf(value); // issue #274 return "" instead of "null"
+      //检查合法性
       checkInjection(srtValue);
       return srtValue;
     }

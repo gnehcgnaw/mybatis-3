@@ -39,6 +39,9 @@ import org.apache.ibatis.transaction.Transaction;
 
 /**
  * {@link SqlSession}的默认实现。 请注意，此类不是线程安全的。
+ *
+ * 在DefaultSqlSession中使用到了策略模式，DefaultSqlSession扮演了Context的角色，
+ * 而将所有数据库相关的操作全部封装到了Executor接口中实现，并通过executor字段选择不同的Executor实现。
  * The default implementation for {@link SqlSession}.
  * Note that this class is not Thread-Safe.
  *
@@ -46,11 +49,25 @@ import org.apache.ibatis.transaction.Transaction;
  */
 public class DefaultSqlSession implements SqlSession {
 
+  /**
+   * Configuration配置对象
+   */
   private final Configuration configuration;
+  /**
+   * 底层依赖的Executor对象
+   */
   private final Executor executor;
-
+  /**
+   * 是否自动提交事务
+   */
   private final boolean autoCommit;
+  /**
+   * 当前缓存中是否有脏数据
+   */
   private boolean dirty;
+  /**
+   * 为防止用户忘记关闭已打开的游标对象，会通过cursorList字段记录有该SqlSession对象生成的游标对象，在{@link DefaultSqlSession#close()}方法中统一关闭这些游标对象
+   */
   private List<Cursor<?>> cursorList;
 
   public DefaultSqlSession(Configuration configuration, Executor executor, boolean autoCommit) {

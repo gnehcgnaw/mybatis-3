@@ -26,5 +26,4 @@
     VALUES
             (#{author_id},#{tbAuthor.authorUsername},#{tbAuthor.authorPassword},#{tbAuthor.authorEmail})
   </insert>
-
 </mapper>
