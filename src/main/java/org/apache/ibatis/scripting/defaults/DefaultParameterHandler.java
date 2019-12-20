@@ -33,15 +33,27 @@ import org.apache.ibatis.type.TypeHandler;
 import org.apache.ibatis.type.TypeHandlerRegistry;
 
 /**
+ * DefaultParameterHandler是ParameterHandler唯一的实现类
  * @author Clinton Begin
  * @author Eduardo Macarron
  */
 public class DefaultParameterHandler implements ParameterHandler {
 
+  /**
+   * TypeHandlerRegistry对象，管理Mybatis中的全部TypeHandler对象
+   */
   private final TypeHandlerRegistry typeHandlerRegistry;
-
+  /**
+   * MappedStatement对象，其中记录了SQL节点相应的配置信息
+   */
   private final MappedStatement mappedStatement;
+  /**
+   * 用户传入的实参对象
+   */
   private final Object parameterObject;
+  /**
+   * 对应的BoundSql，需要设置参数的PreparedStatement对象，就是根据该BoundSql中记录的SQL语句创建的，BoundSql中也记录了对应参数的名称和相关属性
+   */
   private final BoundSql boundSql;
   private final Configuration configuration;
 

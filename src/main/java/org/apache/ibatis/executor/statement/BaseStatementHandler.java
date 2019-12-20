@@ -34,6 +34,7 @@ import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.type.TypeHandlerRegistry;
 
 /**
+ * BaseStatementHandler 只提供了一些参数绑定的相关的方法，并没有实现操作数据库的方法。
  * @author Clinton Begin
  */
 public abstract class BaseStatementHandler implements StatementHandler {
@@ -41,13 +42,29 @@ public abstract class BaseStatementHandler implements StatementHandler {
   protected final Configuration configuration;
   protected final ObjectFactory objectFactory;
   protected final TypeHandlerRegistry typeHandlerRegistry;
+  /**
+   * 记录使用的ResultSetHandler对象，它的主要功能就是将结果映射成结果对象
+   */
   protected final ResultSetHandler resultSetHandler;
+  /**
+   * 记录使用的ParameterHandler对象，ParameterHandler的主要功能就是为SQL语句绑定实参，也就是使用传入的实参替换SQL语句中的"?"占位符
+   */
   protected final ParameterHandler parameterHandler;
-
+  /**
+   * 执行SQL语句的Executor对象
+   */
   protected final Executor executor;
+  /**
+   * 映射的SQL节点对象
+   */
   protected final MappedStatement mappedStatement;
+  /**
+   * RowBounds记录了用户设置的offset和limit，用于在结果集中定位映射的其实位置和结束位置
+   */
   protected final RowBounds rowBounds;
-
+  /**
+   * 绑定的SQL
+   */
   protected BoundSql boundSql;
 
   protected BaseStatementHandler(Executor executor, MappedStatement mappedStatement, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) {
@@ -86,8 +103,7 @@ public abstract class BaseStatementHandler implements StatementHandler {
     Statement statement = null;
     try {
       /**
-       * 实例化语句
-       * 默认 {@link PreparedStatementHandler#instantiateStatement(Connection)}
+       * 首先调用instantiateStatement()抽象方法初始化java.sql.Statement对象
        */
       statement = instantiateStatement(connection);
       //设置语句超时时间

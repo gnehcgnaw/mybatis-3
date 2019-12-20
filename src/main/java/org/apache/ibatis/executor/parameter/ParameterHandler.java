@@ -20,13 +20,18 @@ import java.sql.SQLException;
 
 /**
  * A parameter handler sets the parameters of the {@code PreparedStatement}.
- *
+ * @see org.apache.ibatis.scripting.defaults.DefaultParameterHandler
  * @author Clinton Begin
  */
 public interface ParameterHandler {
 
   Object getParameterObject();
 
+  /**
+   * 为SQL语句绑定实参
+   * @param ps
+   * @throws SQLException
+   */
   void setParameters(PreparedStatement ps)
       throws SQLException;
 

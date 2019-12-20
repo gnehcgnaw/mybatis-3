@@ -28,14 +28,29 @@ import org.apache.ibatis.reflection.wrapper.ObjectWrapper;
 import org.apache.ibatis.reflection.wrapper.ObjectWrapperFactory;
 
 /**
+ * 源对象
  * @author Clinton Begin
  */
 public class MetaObject {
-
+  /**
+   * 原始Javabean对象
+   */
   private final Object originalObject;
+  /**
+   * ObjectWrapper对象，封装了originalObject对象
+   */
   private final ObjectWrapper objectWrapper;
+  /**
+   * 负责实例化originalObject的工厂对象
+   */
   private final ObjectFactory objectFactory;
+  /**
+   * 负责创建objectWrapper的工厂对象
+   */
   private final ObjectWrapperFactory objectWrapperFactory;
+  /**
+   * 用于创建并缓存Reflector对象的工厂对象
+   */
   private final ReflectorFactory reflectorFactory;
 
   private MetaObject(Object object, ObjectFactory objectFactory, ObjectWrapperFactory objectWrapperFactory, ReflectorFactory reflectorFactory) {
@@ -45,20 +60,34 @@ public class MetaObject {
     this.reflectorFactory = reflectorFactory;
 
     if (object instanceof ObjectWrapper) {
+      //如原始对象已经是ObjectWrapper对象，则直接使用
       this.objectWrapper = (ObjectWrapper) object;
     } else if (objectWrapperFactory.hasWrapperFor(object)) {
+      //如果能通过objectWrapperFactory获取到objectWrapper则优先使用，但是mybatis默认提供的工厂永远返回都是false，所以要想进入此方法，必须自定义ObjectWrapperFactory
       this.objectWrapper = objectWrapperFactory.getWrapperFor(this, object);
     } else if (object instanceof Map) {
+      //如果是map则创建MapWrapper对象
       this.objectWrapper = new MapWrapper(this, (Map) object);
     } else if (object instanceof Collection) {
+      //如果是集合创建CollectionWrapper对象
       this.objectWrapper = new CollectionWrapper(this, (Collection) object);
     } else {
+      //如果原始对象是普通的Javabean，则创建BeanWrapper对象
       this.objectWrapper = new BeanWrapper(this, object);
     }
   }
 
+  /**
+   * MetaObject的构造方法是private，forObject()会为了修改属性信息创建MetaObject对象的
+   * @param object
+   * @param objectFactory
+   * @param objectWrapperFactory
+   * @param reflectorFactory
+   * @return
+   */
   public static MetaObject forObject(Object object, ObjectFactory objectFactory, ObjectWrapperFactory objectWrapperFactory, ReflectorFactory reflectorFactory) {
     if (object == null) {
+      //当object为null的时候，统一返回SystemMetaObject.NULL_META_OBJECT
       return SystemMetaObject.NULL_META_OBJECT;
     } else {
       return new MetaObject(object, objectFactory, objectWrapperFactory, reflectorFactory);

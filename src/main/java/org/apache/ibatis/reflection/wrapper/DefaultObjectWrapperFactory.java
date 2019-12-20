@@ -19,15 +19,28 @@ import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.reflection.ReflectionException;
 
 /**
+ * Mybatis提供的{@link ObjectWrapperFactory}的默认实现，但是它实现的getWrapperFor()方法始终抛出异常，hasWrapperFor()始终返回false，
+ * 所以该实现实际上是不可用的，但是与{@link org.apache.ibatis.reflection.factory.ObjectFactory}类似，我们可以在mybatis-config.xml
+ * 中配置自定义的ObjectWrapperFactory实现类进行扩展
  * @author Clinton Begin
  */
 public class DefaultObjectWrapperFactory implements ObjectWrapperFactory {
-
+  /**
+   * 判断某类是否有包装类， 始终返回false
+   * @param object
+   * @return
+   */
   @Override
   public boolean hasWrapperFor(Object object) {
     return false;
   }
 
+  /**
+   * 通过提供的类，和类的元数据，获取包装类，始终抛出异常
+   * @param metaObject
+   * @param object
+   * @return
+   */
   @Override
   public ObjectWrapper getWrapperFor(MetaObject metaObject, Object object) {
     throw new ReflectionException("The DefaultObjectWrapperFactory should never be called to provide an ObjectWrapper.");

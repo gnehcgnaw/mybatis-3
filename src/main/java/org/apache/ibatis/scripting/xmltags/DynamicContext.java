@@ -31,7 +31,9 @@ import org.apache.ibatis.session.Configuration;
  * @author Clinton Begin
  */
 public class DynamicContext {
-
+  /**
+   * PARAMETER_OBJECT_KEY --> parameterObject 这一对关系添加到bindings集合中，
+   */
   public static final String PARAMETER_OBJECT_KEY = "_parameter";
   public static final String DATABASE_ID_KEY = "_databaseId";
 
@@ -46,16 +48,22 @@ public class DynamicContext {
   /**
    *
    * 在SqlNode解析动态SQL时，会将解析后的SQL语句片段添加到该属性中保存，最终拼接成一条完成的SQL语句。
-   * （StringJoiner是java8中的新类）
+   * 之前使用的是StringBuilder ,现在mybatis3.5之后使用的是StringJoiner（StringJoiner是java8中的新类）
    *
    */
   private final StringJoiner sqlBuilder = new StringJoiner(" ");
+  /**
+   * 唯一变化，在ForEachSqlNode和TrimSqlNode中使用
+   */
   private int uniqueNumber = 0;
 
   public DynamicContext(Configuration configuration, Object parameterObject) {
     if (parameterObject != null && !(parameterObject instanceof Map)) {
+      //对于非map类型的参数，会创建对应的MateObject对象，并封装ContextMap对象
       MetaObject metaObject = configuration.newMetaObject(parameterObject);
+      //判断是否存在自定义的TypeHandler
       boolean existsTypeHandler = configuration.getTypeHandlerRegistry().hasTypeHandler(parameterObject.getClass());
+      //初始化bindings集合
       bindings = new ContextMap(metaObject, existsTypeHandler);
     } else {
       bindings = new ContextMap(null, false);
@@ -101,6 +109,9 @@ public class DynamicContext {
      * 将用户传入的参数封装成MetaObject对象
      */
     private final MetaObject parameterMetaObject;
+    /**
+     * 是否存在自定义的TypeHandler
+     */
     private final boolean fallbackParameterObject;
 
     public ContextMap(MetaObject parameterMetaObject, boolean fallbackParameterObject) {
@@ -126,6 +137,7 @@ public class DynamicContext {
       }
 
       if (fallbackParameterObject && !parameterMetaObject.hasGetter(strKey)) {
+        //有自定义的TypeHandler，但是没有对应参数的get方法，在返回原始类型
         return parameterMetaObject.getOriginalObject();
       } else {
         // issue #61 do not modify the context when reading

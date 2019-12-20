@@ -16,6 +16,7 @@ import red.reksai.resultmap.mapper.TbCommentMapper;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -79,5 +80,15 @@ public class ResultMapTest {
   @Test
   public void testSelectAuthorByName(){
     System.out.println(tbAuthorMapper.selectAuthorByName("lisi"));
+  }
+
+  @Test
+  public void testSelectByAuthorById(){
+    System.out.println(tbAuthorMapper.selectByAuthorById(Arrays.asList(1,2,3)));
+  }
+
+  @Test
+  public void testSelectByAuthorById2(){
+    System.out.println(tbAuthorMapper.selectByAuthorById2(1));
   }
 }

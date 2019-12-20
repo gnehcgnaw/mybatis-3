@@ -37,6 +37,7 @@ public class XMLLanguageDriver implements LanguageDriver {
   public ParameterHandler createParameterHandler(MappedStatement mappedStatement, Object parameterObject, BoundSql boundSql) {
     return new DefaultParameterHandler(mappedStatement, parameterObject, boundSql);
   }
+  //处理xml中的SqlSource
 
   @Override
   public SqlSource createSqlSource(Configuration configuration, XNode script, Class<?> parameterType) {
@@ -45,6 +46,8 @@ public class XMLLanguageDriver implements LanguageDriver {
     //调用XMLScriptBuilder.parseScriptNode()方法创建SqlSource对象
     return builder.parseScriptNode();
   }
+
+  //处理Mapper接口注解中的SqlSource
 
   @Override
   public SqlSource createSqlSource(Configuration configuration, String script, Class<?> parameterType) {

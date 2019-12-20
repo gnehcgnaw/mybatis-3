@@ -27,12 +27,22 @@ import org.apache.ibatis.reflection.invoker.Invoker;
 import org.apache.ibatis.reflection.property.PropertyTokenizer;
 
 /**
+ *
  * @author Clinton Begin
  */
 public class BeanWrapper extends BaseWrapper {
-
+  /**
+   * JavaBean对象
+   */
   private final Object object;
+  /**
+   * JavaBean对象相应的MetaClass对象
+   */
   private final MetaClass metaClass;
+
+  /**
+   * 还有从BaseWrapper中继承的MetaObject对象
+   */
 
   public BeanWrapper(MetaObject metaObject, Object object) {
     super(metaObject);
@@ -40,16 +50,30 @@ public class BeanWrapper extends BaseWrapper {
     this.metaClass = MetaClass.forClass(object.getClass(), metaObject.getReflectorFactory());
   }
 
+  /**
+   * 根据指定的属性表达式，获取相应的属性值
+   * @param prop
+   * @return
+   */
   @Override
   public Object get(PropertyTokenizer prop) {
+    //存在索引信息，则表示属性表达式的name部分为集合类型
     if (prop.getIndex() != null) {
+      //获取集合属性
       Object collection = resolveCollection(prop, object);
+      //获取集合元素
       return getCollectionValue(prop, collection);
     } else {
+      //不存在索引信息，表示name部分是一个普通对象
       return getBeanProperty(prop, object);
     }
   }
 
+  /**
+   * 根据指定的属性表达式和属性值，设置相应的属性值
+   * @param prop
+   * @param value
+   */
   @Override
   public void set(PropertyTokenizer prop, Object value) {
     if (prop.getIndex() != null) {

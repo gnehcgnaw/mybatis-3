@@ -35,9 +35,21 @@ import org.w3c.dom.NodeList;
  */
 public class XMLScriptBuilder extends BaseBuilder {
 
+  /**
+   * 要解析的节点
+   */
   private final XNode context;
+  /**
+   * 是否是动态节点
+   */
   private boolean isDynamic;
+  /**
+   * 参数类型
+   */
   private final Class<?> parameterType;
+  /**
+   * NodeHandler的map集合
+   */
   private final Map<String, NodeHandler> nodeHandlerMap = new HashMap<>();
 
   public XMLScriptBuilder(Configuration configuration, XNode context) {
@@ -70,8 +82,10 @@ public class XMLScriptBuilder extends BaseBuilder {
     SqlSource sqlSource;
     //根据是否是动态SQL，创建相应的SqlSource对象
     if (isDynamic) {
+      //这里只是创建了一个DynamicSqlSource对象，
       sqlSource = new DynamicSqlSource(configuration, rootSqlNode);
     } else {
+      //虽然这里也是创建了一个对象，但是Raw的构造中做了一些操作
       sqlSource = new RawSqlSource(configuration, rootSqlNode, parameterType);
     }
     return sqlSource;
@@ -94,7 +108,9 @@ public class XMLScriptBuilder extends BaseBuilder {
         } else {
           contents.add(new StaticTextSqlNode(data));
         }
-      } else if (child.getNode().getNodeType() == Node.ELEMENT_NODE) { // issue #628
+      }
+      // issue #628
+      else if (child.getNode().getNodeType() == Node.ELEMENT_NODE) {
         //如果节点时一个标签，那么一定是动态SQL，并且根据不同的动态标签生成不同的NodeHandler
         String nodeName = child.getNode().getNodeName();
         NodeHandler handler = nodeHandlerMap.get(nodeName);
@@ -177,6 +193,7 @@ public class XMLScriptBuilder extends BaseBuilder {
 
     @Override
     public void handleNode(XNode nodeToHandle, List<SqlNode> targetContents) {
+      //解析节点的子节点
       MixedSqlNode mixedSqlNode = parseDynamicTags(nodeToHandle);
       String collection = nodeToHandle.getStringAttribute("collection");
       String item = nodeToHandle.getStringAttribute("item");
@@ -184,6 +201,7 @@ public class XMLScriptBuilder extends BaseBuilder {
       String open = nodeToHandle.getStringAttribute("open");
       String close = nodeToHandle.getStringAttribute("close");
       String separator = nodeToHandle.getStringAttribute("separator");
+      //创建ForEachSqlNode对象,并将其添加到targetContents集合中
       ForEachSqlNode forEachSqlNode = new ForEachSqlNode(configuration, mixedSqlNode, collection, index, item, open, close, separator);
       targetContents.add(forEachSqlNode);
     }

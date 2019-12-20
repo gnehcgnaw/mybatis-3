@@ -26,4 +26,27 @@
     VALUES
             (#{author_id},#{tbAuthor.authorUsername},#{tbAuthor.authorPassword},#{tbAuthor.authorEmail})
   </insert>
+  <!--这个是为了验证mapper接口和配置文件中是否可以共存-->
+  <!-- <select id="selectAuthorByName" resultType="map" >
+    select author_id , author_username from tb_author where author_username = #{name} order by author_id desc
+  </select>-->
+  <select id="selectByAuthorById" resultMap="authorResultMap">
+    select * from tb_author
+    <if test="list != null and list.size() != 0">
+      where author_id in
+      <foreach collection="list" item="item" index="index" open="(" separator="," close=")">
+        #{item}
+      </foreach>
+    </if>
+
+    <if test="list == null">
+      where author_id = 1
+    </if>
+  </select>
+
+  <select id="selectByAuthorById2" resultMap="authorResultMap">
+    select * from tb_author
+      where author_id = #{id}
+  </select>
+
 </mapper>

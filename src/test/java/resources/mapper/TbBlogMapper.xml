@@ -78,6 +78,7 @@
     where blog_id = ${idValue}
   </sql>
   <sql id="fromSqlElement">
+    <!-- #这里只能使用$符号 -->
     from ${tablename}
     <include refid="whereSqlElement">
       <property name="idValue" value="1"/>

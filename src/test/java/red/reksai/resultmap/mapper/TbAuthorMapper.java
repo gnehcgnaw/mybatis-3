@@ -23,4 +23,8 @@ public interface TbAuthorMapper {
     @Select("select author_id , author_username from tb_author where author_username = #{name} order by author_id desc")
     @MapKey("author_username")
     Map selectAuthorByName(@Param("name")String name);
+
+    List<TbAuthor>  selectByAuthorById(@Param("list") List<Integer> list);
+
+   TbAuthor selectByAuthorById2(@Param("id") int id);
 }

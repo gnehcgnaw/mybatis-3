@@ -21,6 +21,7 @@ import org.apache.ibatis.reflection.wrapper.DefaultObjectWrapperFactory;
 import org.apache.ibatis.reflection.wrapper.ObjectWrapperFactory;
 
 /**
+ * 系统元对象
  * @author Clinton Begin
  */
 public final class SystemMetaObject {
@@ -33,6 +34,9 @@ public final class SystemMetaObject {
     // Prevent Instantiation of Static Class
   }
 
+  /**
+   * NullObject
+   */
   private static class NullObject {
   }
 

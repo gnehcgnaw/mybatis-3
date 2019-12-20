@@ -23,6 +23,10 @@ import org.apache.ibatis.reflection.ReflectionException;
 import org.apache.ibatis.reflection.property.PropertyTokenizer;
 
 /**
+ * 封装了MetaObject对象，并提供了三个常用的方法供其子类使用，分别是：
+ *      {@link BeanWrapper#getCollectionValue(PropertyTokenizer, Object)}
+ *      {@link BeanWrapper#resolveCollection(PropertyTokenizer, Object)}
+ *      {@link BeanWrapper#setCollectionValue(PropertyTokenizer, Object, Object)}
  * @author Clinton Begin
  */
 public abstract class BaseWrapper implements ObjectWrapper {
@@ -35,17 +39,21 @@ public abstract class BaseWrapper implements ObjectWrapper {
   }
 
   protected Object resolveCollection(PropertyTokenizer prop, Object object) {
+    //当前分词器没有属性名称，直接返回对应类
     if ("".equals(prop.getName())) {
       return object;
     } else {
+      //否则，调用MetaObject.getValue()
       return metaObject.getValue(prop.getName());
     }
   }
 
   protected Object getCollectionValue(PropertyTokenizer prop, Object collection) {
+    //如果是map类型，则index为key
     if (collection instanceof Map) {
       return ((Map) collection).get(prop.getIndex());
     } else {
+      //如果是其他类型，则index是下标
       int i = Integer.parseInt(prop.getIndex());
       if (collection instanceof List) {
         return ((List) collection).get(i);

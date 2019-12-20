@@ -338,7 +338,7 @@ public class XMLMapperBuilder extends BaseBuilder {
     /*
      * 因为以上代码的第一印象，以及 mybatis-3-mappper.dtd中 resultMap的type CDATA #REQUIRED ，那也就表明 resolveClass(type)只有两种结果：
      *    1. 正常返回一个typeClass ,例如 tbAuthor ----> {@link red.reksai.resultmap.entity.TbAuthor};
-     *    2. 直接保存，出现一个resolveClass中的一个{@link org.apache.ibatis.binding.BindingException} , Error resolving class. Cause: e
+     *    2. 直接保存，出现一个resolv7eClass中的一个{@link org.apache.ibatis.binding.BindingException} , Error resolving class. Cause: e
      *  所以接下来的一步if(typeClass=null)，就显得没有必要了，
      *  --------------------    这留下了我第二个疑问，希望在跟后续步骤的时候可以解决掉。
      *  会存在`type==null`的时候，例如`association`、`collection`、`case`标签都能出现`type`为`null`，
